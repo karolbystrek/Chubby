@@ -1,4 +1,4 @@
-# Własny język programowania -  Kompilatory
+# Chubby - Własny język programowania
 
 ## Features
 
