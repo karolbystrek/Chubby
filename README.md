@@ -1,360 +1,192 @@
-# Chubby - Własny język programowania
+# Chubby
 
-## Features
+Our own programming language made for TKiK university course.
 
-### Object-Oriented-Programming
+---
 
-- Classes and Methods
-- Inheritance and Interfaces
-- Encapsulation (Access Modifiers)
-- Enums
+## Authors
 
-### Built-In Data Types
+* **Karol Bystrek** - [karbystrek@student.agh.edu.pl](mailto:karbystrek@student.agh.edu.pl)
+* **Patryk Chamera** - [pchamera@student.agh.edu.pl](mailto:pchamera@student.agh.edu.pl)
 
-- Primitive Types: ```byte```, ```int```, ```float```,  ```double```, ```char```, ```string```, ```bool```, ```long```
-- Arrays: support for one-dimensional and multi-dimensional arrays
+---
 
-### Control Flow
+## Project Specification
 
-- Conditionals: ```if```, ```elsif```, ```else```, ```endif```
-- Loops: ```for```, ```while```, ```endfor```, ```endwhile```
+### 1. General Goals
 
-### Memory Management
+[Describe the main objectives and aims of the program.]
 
-- Automatic Garbage Collection:
-- Automates memory management by automatically reclaiming memory that is no longer in use, reducing the need for manual memory allocation and deallocation.
+### 2. Translator Type
 
-### Error Handling
+* [Specify if it's an **Interpreter** or a **Compiler**.]
 
-- Exceptions: ```try```, ```catch```, ```throw```
+### 3. Planned Output
 
-### Operators
+[Describe the expected result or output of the program. Examples:]
 
-- a complete set of operators for performing various operations on variables and values.
+* *e.g., A compiler for language X generating LLVM code.*
+* *e.g., An interpreter for language Y handling matrix operations and displaying results.*
+* *e.g., A converter (compiler) from Pascal to C.*
+* *e.g., A simulator (interpreter) for AVR assembler showing register/memory state during step-by-step execution.*
 
-### Logical Operators
+### 4. Implementation Language
 
-- ```and```, ```or``` instead of &&, || respectively
+* [Specify the programming language used to build this project, e.g., Python, Java, C++, etc.]
 
-### Comments
+### 5. Scanner/Parser Implementation Method
 
-- The hash symbol "#" is used to denote comments, similar to Python.
-- Comments allow to include text within code that is ignored by the compiler.
+* [Describe how the lexical analysis (scanning) and syntax analysis (parsing) are implemented.]
+* *e.g., Manually implemented scanner and recursive descent parser.*
+* *e.g., Using scanner/parser generators:*
+  * **Scanner Generator:** [Specify tool, e.g., Flex, JFlex]
+  * **Parser Generator:** [Specify tool, e.g., Bison, ANTLR, Yacc]
 
-## Syntax Rules
+---
 
-### Variables and Data Types
+## Token Description
 
-Variables are declared with a specified data type, followed by the variable name and optional initialization.
+[Provide a description of the language's tokens. This can be done using:]
 
-- Basic Variable Declaration:
+* **A Table:**
 
-```
-int x = 10;
-flaot pi = 3.14;
-bool isValid = true;
-string name = "John";
-```
+    | Token Type | Lexeme/Pattern        | Description                     |
+    | :--------- | :-------------------- | :------------------------------ |
+    | `KEYWORD`  | `if`, `else`, `while` | Reserved language keywords      |
+    | `ID`       | `[a-zA-Z_][a-zA-Z0-9_]*`| Identifiers (variables, etc.) |
+    | `NUMBER`   | `[0-9]+`              | Integer literals                |
+    | `OPERATOR` | `+`, `-`, `*`, `/`, `=` | Arithmetic/Assignment operators |
+    | ...        | ...                   | ...                             |
 
-- Array Declaration:
+* **A List:**
+  * `KEYWORD`: `if`, `else`, `while`, ...
+  * `IDENTIFIER`: Matches `[a-zA-Z_][a-zA-Z0-9_]*`
+  * `INTEGER_LITERAL`: Matches `[0-9]+`
+  * ...
 
-```
-int[] numbers = new int[5];
-int[][] matrix = new int[3][3];
-```
+* **Generator Notation:**
 
-### Functions (Methods)
+    ```[generator-syntax]
+    // Example using Flex-like syntax
+    %%
+    if | else | while   { return KEYWORD; }
+    [a-zA-Z_][a-zA-Z0-9_]* { return ID; }
+    [0-9]+              { return NUMBER; }
+    "+" | "-" | "*" | "/" | "=" { return OPERATOR; }
+    // ... other token rules
+    %%
+    ```
 
-Methods are defined with an access modifier, followed by the ```function``` keyword, the method name, parameters, return type, function body.
+---
 
-- Function Declaration:
+## Grammar
 
-```
-ACCESS_MOD function FUNC_NAME(TYPE param1, ...) : RETURN_TYPE
- // function body
-endfunction
-```
+### 1. Notation
 
-- Example:
+* [Specify the notation used, e.g., **BNF (Backus-Naur Form)** or **Parser Generator Notation (Yacc, Bison, ANTLR, etc.)**]
 
-```
-public function add(int a, int b) : int
-return a + b;
-endfunction
-```
+### 2. Grammar Definition
 
-- ```Void``` return type if no value is returned by the method
+[Provide the context-free grammar for the language, without semantic actions. Use a code block for clarity.]
 
-### Classes
+* **Using Standard Notation (e.g., BNF):**
 
-Classes are defined using the access modifier, ```class``` keyword, followed by the lass name. Methods and variables must be defined inside the class. Classes can extend one other class and implement multiple interfaces.
+    ```bnf
+    <program> ::= <statement_list>
+    <statement_list> ::= <statement> | <statement> <statement_list>
+    <statement> ::= <assignment_statement> | <if_statement> | ...
+    <assignment_statement> ::= <identifier> '=' <expression> ';'
+    <expression> ::= <term> | <expression> '+' <term> | <expression> '-' <term>
+    <term> ::= <factor> | <term> '*' <factor> | <term> '/' <factor>
+    <factor> ::= <identifier> | <number> | '(' <expression> ')'
+    // ... rest of the grammar rules
+    ```
 
-- Class Declaration:
+* **Using Generator Notation (e.g., Yacc/Bison):**
 
-```
-ACCESS_MOD class CLASS_NAME extends ... implements ...
- // fields
- // methods
-endclass
-```
+    ```yacc
+    %token ID NUMBER IF ELSE WHILE PLUS MINUS TIMES DIVIDE ASSIGN LPAREN RPAREN SEMI
+    // ... other token declarations
 
-- Example:
+    %%
+    program: statement_list;
 
-```
-public class Person implements Entity
- string name;
- int age;
+    statement_list: statement
+                  | statement statement_list
+                  ;
 
- constructor Person(string name, int age)
-  this.name = name;
-  this.age = age;
- endconstructor
+    statement: assignment_statement
+             | if_statement
+             // | other_statements ...
+             ;
 
- public function get() : void
-  print("Hello, my name is " + name);
- endfunction
-endclass
-```
+    assignment_statement: ID ASSIGN expression SEMI;
 
-### Conditionals
+    expression: term
+              | expression PLUS term
+              | expression MINUS term
+              ;
 
-The conditional statement uses the ```if```, ```elsif```, ```else``` and ```endif``` keywords to control the flow of the program based on a condition.
+    term: factor
+        | term TIMES factor
+        | term DIVIDE factor
+        ;
 
-- ```if```, ```elsif```, ```else```:
+    factor: ID
+          | NUMBER
+          | LPAREN expression RPAREN
+          ;
 
-```
-if (x > 0) then
- print("Positive);
-elsif (x < 0) then
- print("Negative");
-else
- print("Zero");
-endif
-```
+    // ... rest of the grammar rules
+    %%
+    ```
 
-### Loops
+---
 
-There are two primary loop structures: **for** and **while**. Both require a condition or iteration step and the body of the loop.
+## Tools and Dependencies
 
-- ```for``` Loop:
+* **Scanner/Parser Generators:** [List any generators used, e.g., Flex, Bison, ANTLR]
+* **External Packages/Libraries:** [List any third-party libraries required, e.g., LLVM library, specific data structure libraries]
+* **Build System:** [e.g., Make, CMake, Maven, Gradle]
+* **Compiler/Interpreter:** [Specify the required version, e.g., GCC 9+, Python 3.8+, Java 11+]
 
-```
-for (int i = 0; i < 10; i++) then
- print(i);
-endfor
-```
+---
 
-- ```while``` Loop:
+## Usage Instructions
 
-```
-while (x < 10) then
- x++;
-endwhile
-```
+[Provide clear, step-by-step instructions on how to build/compile and run the program.]
 
-### Logical Operators
+1. **Prerequisites:** Ensure you have installed [List prerequisites, e.g., `make`, `gcc`, `flex`, `bison`, `python3`].
+2. **Clone the repository:**
 
-The language supports logical operators for combining boolean expressions: ```and```, ```or```
+    ```bash
+    git clone [repository-url]
+    cd [repository-directory]
+    ```
 
-- Example:
+3. **Build the project:**
 
-```
-if (x > 0 and y > 0) then
- print("Both are positive")
-endif
-```
+    ```bash
+    make # Or relevant build command
+    ```
 
-### Error handling
+4. **Run the program:**
 
-The language supports basic error handling operations using ```try```, ```catch```, ```throw```.
+    ```bash
+    ./[executable_name] [input_file] [optional_arguments]
+    # e.g., ./mycompiler source.lang -o output.llvm
+    # e.g., python myinterpreter.py script.myilang
+    ```
 
-- ```Try```-```Catch```:
+---
 
-```
-try
- int result = devide(a, b);
-catch (DevideByZeroException e)
- print("Division by zero!");
-endtry
-```
+## Usage Example
 
-- Throwing Exceptions
+[Provide a simple but illustrative example of how to use the program with sample input and expected output.]
 
-```
-public function devide(int a, int b) : float
- if (b == 0) then
-  throw new DivisionByZeroException("Cannot devide by zero!");
- endif;
- return a / b;
-endfunction
-```
+**Sample Input (`example.src`):**
 
-### Access Modifiers and Keyword Extensions
-
-Access modifiers control the visibility of classess, methods and variables. The following access modifiers are supported:
-
-- ```public```: Accessible from anywhere.
-- ```protected```: Accessible within the class and its subclasses.
-- ```private```: Accessible only within the class.
-
-The ```const``` keyword defines variables whose values cannot be changed after initialization. It ensures immatability for the declared variable.
-
-- Basic usage:
-
-```
-const int MAX_VALUE = 100;
-const string APP_NAME = "MyApp";
-```
-
-### Arithmetic Operators
-
-Arithmetic operators are used to perform common mathematical operations:
-
-- ```+``` (Addition): Adds values on either side of the operator
-
-- ```-``` (Subtraction): Subtracts right-hand operand from left-hand operand
-
-- ```*``` (Multiplication): Multiplies values on either side of the operator
-
-- ```/``` (Division): Divides left-hand operand by right-hand operand
-
-- ```%``` (Modulus): Returns the remainder of a division operation
-
-- ```++``` (Increment): Increases the value by 1
-
-- ```--``` (Decrement): Decreases the value by 1
-
-### Assignment Operators
-
-Assignment operators are used to assign values to variables:
-
-- ```=``` (Simple Assignment): Assigns value of right operand to left operand
-
-- ```+=``` (Add AND Assignment): Adds right operand to left operand and assigns result to left operand
-
-- ```-=``` (Subtract AND Assignment): Subtracts right operand from left operand and assigns result to left operand
-
-- ```*=``` (Multiply AND Assignment): Multiplies left operand by right operand and assigns result to left operand
-
-- ```/=``` (Divide AND Assignment): Divides left operand by right operand and assigns result to left operand
-
-- ```%=``` (Modulus AND Assignment): Takes modulus using two operands and assigns result to left operand
-
-### Comparison Operators
-
-Comparison operators are used to compare two values:
-
-- ```==``` (Equal to): Checks if the values of two operands are equal
-
-- ```!=``` (Not equal to): Checks if the values of two operands are not equal
-
-- ```>``` (Greater than): Checks if the value of left operand is greater than the value of right operand
-
-- ```<``` (Less than): Checks if the value of left operand is less than the value of right operand
-
-- ```>=``` (Greater than or equal to): Checks if the value of left operand is greater than or equal to the value of right operand
-
-- ```<=``` (Less than or equal to): Checks if the value of left operand is less than or equal to the value of right operand
-endif
-
-### Bitwise Operators
-
-Bitwise operators perform operations on binary representations of numbers:
-
-- ```&``` (Bitwise AND): Performs a Boolean AND operation on each bit of two integer expressions
-
-- ```|``` (Bitwise OR): Performs a Boolean OR operation on each bit of two integer expressions
-
-- ```^``` (Bitwise XOR): Performs a Boolean exclusive OR operation on each bit of two integer expressions
-
-- ```~``` (Bitwise Complement): Inverts all the bits of an integer expression
-
-- ```<<``` (Left Shift): Shifts the bits of the left operand to the left by the number of positions specified by the right operand
-
-- ```>>``` (Right Shift): Shifts the bits of the left operand to the right by the number of positions specified by the right operand
-
-### Ternary Operator
-
-The ternary operator is a shorthand for an if-else statement:
-
-- ```? :``` (Conditional): Takes three operands and returns one of two values depending on the evaluation of a Boolean expression
-
-### String Concatenation
-
-The ```+``` operator is overloaded to perform string concatenation when at least one operand is a string.
-
-### Method overriding
-
-The ```override``` keyword explicitly indicates that a method in a derived class is intended to override a method in its base class. This helps catch errors when the method signature doesn't match as expected.
-
-```
-public class Animal
-  public function makeSound() : void
-    print("Generic animal sound");
-  endfunction
-endclass
-
-public class Dog extends Animal
-  override public function makeSound() : void
-    print("Woof!");
-  endfunction
-endclass
-```
-
-### Static Members
-
-The ```static``` keyword is used to define class-level members that are shared across all instances of the class. Static members belong to the class itself rather than to any specific instance.
-
-- Static Fields:
-
-```
-public class Counter
-  static int count = 0;
-
-  public function increment() : void
-    Counter.count++;
-  endfunction
-
-  public static function getCount() : int
-    return Counter.count;
-  endfunction
-endclass
-```
-
-- Static Methods:
-
-```
-public class MathUtils
-  public static function square(int n) : int
-    return n * n;
-  endfunction
-
-  public static function min(int a, int b) : int
-    return a < b ? a : b;
-  endfunction
-endclass
-```
-
-### Modules can be imported using the ```import``` keyword
-
-- ```import``` syntax:
-
-```
-import com.example.MyClass;
-```
-
-### Enumerations (```enum```)
-
-Enums provides type-safe constants and can include methods and fields.
-
-- Example:
-
-```
-enum Direction
- NORTH, EAST, WEST, SOUTH
-
- public function isVertical() : bool
-  return this == NORTH or this == SOUTH;
- endfunction
-endenum
-```
+```[language-syntax]
+// Example code in your defined language
+variable = 10 + 5 * 2;
+print variable;
