@@ -146,32 +146,6 @@ exploring concepts like lexical analysis, parsing, memory management, and error 
 
 ## Usage Instructions
 
-<!-- 1. **Prerequisites:** Ensure you have installed the necessary tools and dependencies listed above. **[Placeholder: Add specific prerequisites, e.g., `make`, `g++`, `python3`, `llvm-dev`]**.
-2. **Clone the repository:**
-
-    ```bash
-    git clone [Placeholder: repository-url]
-    cd [Placeholder: repository-directory]
-    ```
-
-3. **Build the project:** Execute the appropriate build command for your setup.
-
-    ```bash
-    # [Placeholder: Provide the actual build command]
-    # Example: make
-    # Example: cmake .. && make
-    # Example: python setup.py build
-    ```
-
-4. **Run the program:** Use the compiled executable or interpreter script to process a Chubby source file.
-
-    ```bash
-    # [Placeholder: Provide the command to run your compiler/interpreter]
-    # Example Compiler: ./chubbyc source_file.chubby -o output_target
-    # Example Interpreter: python chubby_interpreter.py script_file.chubby
-    ./[executable_name] [input_file.chubby] [optional_arguments]
-    ``` -->
-
 ---
 
 ## Usage Example
