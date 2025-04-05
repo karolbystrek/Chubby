@@ -184,115 +184,141 @@ Below is a simple example demonstrating some features of the Chubby language.
 
 **Sample Input (`example.cbb`):**
 
-```ada
-function public main() : void
-    # Test integer and float declarations
-    int integerVar = 42;
-    float floatVar = 3.14;
-    double doubleVar = 2.718;
+```python
+import SomePackage.Entity;
 
-    # Test string and boolean declarations
-    string message = "Hello, World!";
-    bool isTrue = true;
-    bool isFalse = false;
+# Main application class containing the entry point and utility methods
+public class ExampleApp
 
-    # Test arithmetic operations
-    int a = 10;
-    int b = 20;
-    int sum = a + b;
-    int difference = b - a;
-    int product = a * b;
-    int quotient = b / a;
-    int modulo = b % a;
+    # Entry point method for the application
+    # Assumed to be static for execution like Java's main
+    function public static main() : void
+        # Test integer and float declarations
+        int integerVar = 42;
+        float floatVar = 3.14;
+        double doubleVar = 2.718;
 
-    # Test increment and decrement
-    a++;
-    b--;
+        # Test string and boolean declarations
+        string message = "Hello, World!";
+        bool isTrue = true;
+        bool isFalse = false;
 
-    # Test compound assignment operators
-    int x = 5;
-    x += 3;   # x is now 8
-    x -= 2;   # x is now 6
-    x *= 2;   # x is now 12
-    x /= 3;   # x is now 4
-    x %= 2;   # x is now 0
+        # Test arithmetic operations
+        int a = 10;
+        int b = 20;
+        # Calls to static methods within the same class
+        int sum = add(a, b);
+        int difference = b - a;
+        int product = multiply(a, b);
+        int quotient = divide(b, a);
+        int modulo = b % a;
 
-    # Test comparison and logical operators
-    if (a > b and b < 30) then
-        print("Complex condition is true");
-    endif
+        # Test increment and decrement
+        a++;
+        b--;
 
-    if (a == b or a != b) then
-        print("Equality and inequality test");
-    endif
+        # Test compound assignment operators
+        int x = 5;
+        x += 3;   # x is now 8
+        x -= 2;   # x is now 6
+        x *= 2;   # x is now 12
+        x /= 3;   # x is now 4
+        x %= 2;   # x is now 0
 
-    # Test nested conditionals
-    if (integerVar > 40) then
-        if (floatVar < 4.0) then
-            print("Nested condition met");
-        else
-            print("Outer condition true, inner false");
+        # Test comparison and logical operators
+        if (a > b and b < 30) then
+            # Assuming 'print' is a built-in or globally accessible function
+            print("Complex condition is true");
         endif
-    endif
 
-    # Test different types of loops
-    for (int i = 0; i < 3; i++) then
-        while (i < 2) then
-            print("Nested loop: " + i);
-            break;
-        endwhile
-    endfor
+        if (a == b or a != b) then
+            print("Equality and inequality test");
+        endif
 
-    # Test function calls and return values
-    int result1 = add(a, b);
-    int result2 = multiply(a, b);
-    print("Addition result: " + result1);
-    print("Multiplication result: " + result2);
+        # Test nested conditionals
+        if (integerVar > 40) then
+            if (floatVar < 4.0) then
+                print("Nested condition met");
+            else
+                print("Outer condition true, inner false");
+            endif
+        endif
 
-    # Test array operations
-    int[] singleArray = new int[5];
-    singleArray[0] = 10;
-    singleArray[1] = 20;
+        # Test different types of loops
+        for (int i = 0; i < 3; i++) then
+            while (i < 2) then
+                print("Nested loop: " + i); # Assuming string concatenation with int works
+                break;
+            endwhile
+        endfor
 
-    int[][] multiArray = new int[3][3];
-    multiArray[0][0] = 1;
-    multiArray[1][1] = 2;
+        # Test function calls and return values (already tested above)
+        int result1 = add(a, b);
+        int result2 = multiply(a, b);
+        print("Addition result: " + result1);
+        print("Multiplication result: " + result2);
 
-    # Test error handling
-    try
-        int error = divide(10, 0);
-    catch
-        print("Division by zero caught!");
-    endtry
+        # Test array operations
+        int[] singleArray = new int[5];
+        singleArray[0] = 10;
+        singleArray[1] = 20;
+        print("Single array element 0: " + singleArray[0]);
 
-    # Test object-oriented features
-    Person person = new Person("John", 30);
-    person.get();
-endfunction
+        int[][] multiArray = new int[3][3];
+        multiArray[0][0] = 1;
+        multiArray[1][1] = 2;
+        print("Multi array element [1][1]: " + multiArray[1][1]);
 
-function public add(int x, int y) : int
-    return x + y;
-endfunction
+        # Test error handling
+        try
+            print("Attempting division by zero...");
+            int error = divide(10, 0); # Calling the static method
+            print("This should not be printed.");
+        catch
+            print("Division by zero caught!");
+        endtry
 
-function public multiply(int x, int y) : int
-    return x * y;
-endfunction
+        # Test object-oriented features - Instantiating the separate Person class
+        Person person = new Person("John", 30);
+        person.get(); # Calling an instance method on the Person object
 
-function public divide(int x, int y) : int
-    return x / y;
-endfunction
+        print("Execution finished.");
+    endfunction # End of main method
 
+    # Utility function for addition (now a static method of ExampleApp)
+    function public static add(int x, int y) : int
+        return x + y;
+    endfunction
+
+    # Utility function for multiplication (now a static method of ExampleApp)
+    function public static multiply(int x, int y) : int
+        return x * y;
+    endfunction
+
+    # Utility function for division (now a static method of ExampleApp)
+    # Intentionally allows division by zero to test try-catch
+    function public static divide(int x, int y) : int
+        return x / y;
+    endfunction
+
+endclass # End of ExampleApp class
+
+
+# Separate class definition for Person
 public class Person implements Entity
     string name;
     int age;
 
+    # Constructor for Person class
     constructor Person(string name, int age)
         this.name = name;
         this.age = age;
     endconstructor
 
+    # Instance method for Person class
     function public get() : void
         print("Hello, my name is " + name + " and I am " + age + " years old");
     endfunction
-endclass
+
+endclass # End of Person class
 ```
