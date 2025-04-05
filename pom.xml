@@ -7,22 +7,34 @@
     <name>Archetype - ChubbyCompiler</name>
     <url>https://github.com/karolbystrek/Chubby</url>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <antlr.version>4.13.1</antlr.version>
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <maven.shade.plugin.version>3.5.2</maven.shade.plugin.version>
+        <build.helper.maven.plugin.version>3.5.0</build.helper.maven.plugin.version>
+        <maven.site.plugin.version>3.12.1</maven.site.plugin.version>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
-            <version>4.13.1</version>
+            <version>${antlr.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -32,7 +44,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.13.1</version>
+                <version>${antlr.version}</version>
                 <configuration>
                     <listener>true</listener>
                     <visitor>true</visitor>
@@ -53,7 +65,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>${build.helper.maven.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -72,13 +84,52 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.20.0</version>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.karolbystrek.chubbycompiler.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
+            </plugin>
+
         </plugins>
     </build>
 
