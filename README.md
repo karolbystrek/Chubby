@@ -33,28 +33,98 @@ The main goal of the Chubby project is to design and implement a custom, object-
 
 ## Token Description
 
-| Token Type         | Lexeme/Pattern                               | Description                                         |
-| :----------------- | :------------------------------------------- | :-------------------------------------------------- |
-| `KEYWORD`          | `class`, `endclass`, `function`, `endfunction`, `constructor`, `endconstructor`, `enum`, `endenum`, `if`, `then`, `elsif`, `else`, `endif`, `for`, `endfor`, `while`, `endwhile`, `try`, `catch`, `endtry`, `throw`, `return`, `extends`, `implements`, `public`, `protected`, `private`, `const`, `override`, `static`, `import`, `new`, `this`, `void`, `null`, `continue`, `break` | Reserved language keywords                          |
-| `TYPE_KEYWORD`     | `byte`, `int`, `float`, `double`, `char`, `string`, `bool`, `long` | Built-in primitive type keywords                  |
-| `BOOLEAN_LITERAL`  | `true`, `false`                              | Boolean literal values                              |
-| `IDENTIFIER`               | `[a-zA-Z_][a-zA-Z0-9_]*`                     | Identifiers (variables, classes, methods, etc.)    |
-| `INTEGER_LITERAL`  | `[0-9]+`                                     | Integer numerical literals                          |
-| `FLOAT_LITERAL`    | `[0-9]+.[0-9]+`                              | Floating-point numerical literals                   |
-| `CHAR_LITERAL`     | `'[^']'`                                     | Character literals (e.g., 'a')                      |
-| `STRING_LITERAL`   | `"[^"]*"`                                    | String literals (e.g., "Hello")                     |
-| `ARITHMETIC_OP`    | `+`, `-`, `*`, `/`, `%`, `++`, `--`          | Arithmetic operators                                |
-| `ASSIGNMENT_OP`    | `=`, `+=`, `-=`, `*=`, `/=`, `%=`            | Assignment operators                                |
-| `COMPARISON_OP`    | `==`, `!=`, `>`, `<`, `>=`, `<=`             | Comparison operators                                |
-| `LOGICAL_OP`       | `and`, `or`                                  | Logical operators                                   |
-| `BITWISE_OP`       | `&`, `\|`,`^`,`<<`,`>>`                   | Bitwise operators                                   |
-| `BRACKETS`        | `(`, `)`, `[`, `]`, `{`, `}`                 | Parentheses, brackets, braces                       |
-| `SEPARATOR`        | `,`, `;`, `.`, `:`                                | Comma, semicolon, dot (member access), colon               |
-| `COMMENT`   | `#.*`                                          | Single-line comment                     |
-| `WHITESPACE`       | `[ \t\r\n]+`                                 | Whitespace characters (ignored, separates tokens)   |
-<!-- | `COMMENT_CONTENT`  | `.*` (following `#` until newline)           | Text content of a comment (ignored)                 | -->
-<!-- | `ACCESS_MODIFIER`  | `public`, `protected`, `private`             | Access control modifiers                            | -->
-<!-- | `TERNARY_OP`       | `?`, `:`                                     | Parts of the ternary conditional operator           | -->
+| Token Type                         | Regular Expression Pattern | Description                            |
+|:-----------------------------------|:---------------------------|:---------------------------------------|
+| `keyword_CLASS`                    | `class`                    | Keyword 'class'                        |
+| `keyword_ENDCLASS`                 | `endclass`                 | Keyword 'endclass'                     |
+| `keyword_FUNCTION`                 | `function`                 | Keyword 'function'                     |
+| `keyword_ENDFUNCTION`              | `endfunction`              | Keyword 'endfunction'                  |
+| `keyword_CONSTRUCTOR`              | `constructor`              | Keyword 'constructor'                  |
+| `keyword_ENDCONSTRUCTOR`           | `endconstructor`           | Keyword 'endconstructor'               |
+| `keyword_ENUM`                     | `enum`                     | Keyword 'enum'                         |
+| `keyword_ENDENUM`                  | `endenum`                  | Keyword 'endenum'                      |
+| `keyword_IF`                       | `if`                       | Keyword 'if'                           |
+| `keyword_THEN`                     | `then`                     | Keyword 'then'                         |
+| `keyword_ELSIF`                    | `elsif`                    | Keyword 'elsif'                        |
+| `keyword_ELSE`                     | `else`                     | Keyword 'else'                         |
+| `keyword_ENDIF`                    | `endif`                    | Keyword 'endif'                        |
+| `keyword_FOR`                      | `for`                      | Keyword 'for'                          |
+| `keyword_ENDFOR`                   | `endfor`                   | Keyword 'endfor'                       |
+| `keyword_WHILE`                    | `while`                    | Keyword 'while'                        |
+| `keyword_ENDWHILE`                 | `endwhile`                 | Keyword 'endwhile'                     |
+| `keyword_TRY`                      | `try`                      | Keyword 'try'                          |
+| `keyword_CATCH`                    | `catch`                    | Keyword 'catch'                        |
+| `keyword_ENDTRY`                   | `endtry`                   | Keyword 'endtry'                       |
+| `keyword_THROW`                    | `throw`                    | Keyword 'throw'                        |
+| `keyword_RETURN`                   | `return`                   | Keyword 'return'                       |
+| `keyword_EXTENDS`                  | `extends`                  | Keyword 'extends'                      |
+| `keyword_IMPLEMENTS`               | `implements`               | Keyword 'implements'                   |
+| `keyword_PUBLIC`                   | `public`                   | Keyword 'public'                       |
+| `keyword_PROTECTED`                | `protected`                | Keyword 'protected'                    |
+| `keyword_PRIVATE`                  | `private`                  | Keyword 'private'                      |
+| `keyword_CONST`                    | `const`                    | Keyword 'const'                        |
+| `keyword_OVERRIDE`                 | `override`                 | Keyword 'override'                     |
+| `keyword_STATIC`                   | `static`                   | Keyword 'static'                       |
+| `keyword_IMPORT`                   | `import`                   | Keyword 'import'                       |
+| `keyword_NEW`                      | `new`                      | Keyword 'new'                          |
+| `keyword_THIS`                     | `this`                     | Keyword 'this'                         |
+| `keyword_VOID`                     | `void`                     | Keyword 'void'                         |
+| `keyword_NULL`                     | `null`                     | Keyword 'null'                         |
+| `keyword_CONTINUE`                 | `continue`                 | Keyword 'continue'                     |
+| `keyword_BREAK`                    | `break`                    | Keyword 'break'                        |
+| `type_BYTE`                        | `byte`                     | Type keyword 'byte'                    |
+| `type_INT`                         | `int`                      | Type keyword 'int'                     |
+| `type_FLOAT`                       | `float`                    | Type keyword 'float'                   |
+| `type_DOUBLE`                      | `double`                   | Type keyword 'double'                  |
+| `type_CHAR`                        | `char`                     | Type keyword 'char'                    |
+| `type_STRING`                      | `string`                   | Type keyword 'string'                  |
+| `type_BOOL`                        | `bool`                     | Type keyword 'bool'                    |
+| `type_LONG`                        | `long`                     | Type keyword 'long'                    |
+| `literal_BOOLEAN_TRUE`             | `true`                     | Boolean literal 'true'                 |
+| `literal_BOOLEAN_FALSE`            | `false`                    | Boolean literal 'false'                |
+| `IDENTIFIER`                       | `[a-zA-Z_][a-zA-Z0-9_]*`   | Identifiers (variables, classes, etc.) |
+| `literal_INTEGER`                  | `[0-9]+`                   | Integer numerical literal              |
+| `literal_FLOAT`                    | `[0-9]+\.[0-9]+`           | Floating-point numerical literal       |
+| `literal_CHAR`                     | `'[^']'`                   | Character literal                      |
+| `literal_STRING`                   | `"[^"]*"`                  | String literal                         |
+| `operator_ARITHMETIC_PLUS`         | `\+`                       | Arithmetic operator '+'                |
+| `operator_ARITHMETIC_MINUS`        | `-`                        | Arithmetic operator '-'                |
+| `operator_ARITHMETIC_MULTIPLY`     | `\*`                       | Arithmetic operator '*'                |
+| `operator_ARITHMETIC_DIVIDE`       | `/`                        | Arithmetic operator '/'                |
+| `operator_ARITHMETIC_MODULO`       | `%`                        | Arithmetic operator '%'                |
+| `operator_ARITHMETIC_INCREMENT`    | `\+\+`                     | Arithmetic operator '++'               |
+| `operator_ARITHMETIC_DECREMENT`    | `--`                       | Arithmetic operator '--'               |
+| `operator_ASSIGNMENT_ASSIGN`       | `=`                        | Assignment operator '='                |
+| `operator_ASSIGNMENT_PLUS_ASSIGN`  | `\+=`                      | Assignment operator '+='               |
+| `operator_ASSIGNMENT_MINUS_ASSIGN` | `-=`                       | Assignment operator '-='               |
+| `operator_ASSIGNMENT_MULT_ASSIGN`  | `\*=`                      | Assignment operator '*='               |
+| `operator_ASSIGNMENT_DIV_ASSIGN`   | `/=`                       | Assignment operator '/='               |
+| `operator_ASSIGNMENT_MOD_ASSIGN`   | `%=`                       | Assignment operator '%='               |
+| `operator_COMPARISON_EQUAL`        | `==`                       | Comparison operator '=='               |
+| `operator_COMPARISON_NOT_EQUAL`    | `!=`                       | Comparison operator '!='               |
+| `operator_COMPARISON_GREATER`      | `>`                        | Comparison operator '>'                |
+| `operator_COMPARISON_LESS`         | `<`                        | Comparison operator '<'                |
+| `operator_COMPARISON_GREATER_EQ`   | `>=`                       | Comparison operator '>='               |
+| `operator_COMPARISON_LESS_EQ`      | `<=`                       | Comparison operator '<='               |
+| `operator_LOGICAL_AND`             | `and`                      | Logical operator 'and'                 |
+| `operator_LOGICAL_OR`              | `or`                       | Logical operator 'or'                  |
+| `operator_BITWISE_AND`             | `&`                        | Bitwise operator '&'                   |
+| `operator_BITWISE_OR`              | `\|`                       | Bitwise operator '\|'                  |
+| `operator_BITWISE_XOR`             | `\^`                       | Bitwise operator '^'                   |
+| `operator_BITWISE_LEFT_SHIFT`      | `<<`                       | Bitwise operator '<<'                  |
+| `operator_BITWISE_RIGHT_SHIFT`     | `>>`                       | Bitwise operator '>>'                  |
+| `bracket_LEFT_PAREN`               | `\(`                       | Bracket '('                            |
+| `bracket_RIGHT_PAREN`              | `\)`                       | Bracket ')'                            |
+| `bracket_LEFT_SQUARE`              | `\[`                       | Bracket '['                            |
+| `bracket_RIGHT_SQUARE`             | `\]`                       | Bracket ']'                            |
+| `bracket_LEFT_BRACE`               | `\{`                       | Bracket '{'                            |
+| `bracket_RIGHT_BRACE`              | `\}`                       | Bracket '}'                            |
+| `separator_COMMA`                  | `,`                        | Separator ','                          |
+| `separator_SEMICOLON`              | `;`                        | Separator ';'                          |
+| `separator_DOT`                    | `\.`                       | Separator '.' (member access)          |
+| `separator_COLON`                  | `:`                        | Separator ':'                          |
+| `COMMENT`                          | `#.*`                      | Single-line comment                    |
+| `WHITESPACE`                       | `[ \t\r\n]+`               | Whitespace characters (ignored)        |
 
 ---
 
@@ -66,150 +136,6 @@ The main goal of the Chubby project is to design and implement a custom, object-
     **[Placeholder: Confirm or change if using a different notation like ANTLR's]** -->
 
 ### 2. Grammar Definition
-
-<!-- ```bnf
-<program> ::= <import_statement>* <declaration>*
-
-<import_statement> ::= "import" <qualified_identifier> ";"
-
-<declaration> ::= <class_declaration> | <enum_declaration> | <function_declaration> // Assuming top-level functions are allowed, else remove
-
-<access_modifier> ::= "public" | "protected" | "private"
-
-<class_declaration> ::= "class" <access_modifier>? <identifier> <extends_clause>? <implements_clause>?
-                          <class_member>*
-                        "endclass"
-
-<extends_clause> ::= "extends" <identifier>
-
-<implements_clause> ::= "implements" <identifier> ("," <identifier>)*
-
-<class_member> ::= <field_declaration> | <constructor_declaration> | <method_declaration>
-
-<field_declaration> ::= <access_modifier>? "static"? "const"? <type> <identifier> ("=" <expression>)? ";"
-
-<constructor_declaration> ::= <access_modifier>? "constructor" <identifier> "(" <parameter_list>? ")"
-                                <statement>*
-                              "endconstructor"
-
-<method_declaration> ::= "function" <access_modifier>? "static"? "override"? <identifier> "(" <parameter_list>? ")" ":" <return_type>
-                           <statement>*
-                         "endfunction"
-
-<parameter_list> ::= <parameter> ("," <parameter>)*
-<parameter> ::= <type> <identifier>
-
-<return_type> ::= <type> | "void"
-
-<type> ::= <primitive_type> | <identifier> (<array_specifier>)?
-<primitive_type> ::= "byte" | "int" | "float" | "double" | "char" | "string" | "bool" | "long"
-<array_specifier> ::= "[" "]" ("[" "]")* // For multi-dimensional arrays
-
-<enum_declaration> ::= "enum" <access_modifier>? <identifier>
-                         <enum_constant> ("," <enum_constant>)*
-                         <enum_member>* // Optionally allow methods/fields inside enums
-                       "endenum"
-<enum_constant> ::= <identifier>
-<enum_member> ::= <method_declaration> // Simplified, could include fields
-
-<statement> ::= <variable_declaration_statement>
-              | <assignment_statement>
-              | <if_statement>
-              | <for_loop>
-              | <while_loop>
-              | <return_statement>
-              | <expression_statement> // e.g., function calls like print(...)
-              | <try_catch_statement>
-              | <throw_statement>
-              | <block_statement> // Potentially needed if explicit blocks { } are desired beyond control structures
-
-<variable_declaration_statement> ::= <type> <identifier> ("=" <expression>)? ";"
-
-<assignment_statement> ::= <lvalue> <assignment_operator> <expression> ";"
-<lvalue> ::= <identifier> | <array_access> | <member_access> // What can be assigned to
-<assignment_operator> ::= "=" | "+=" | "-=" | "*=" | "/=" | "%="
-
-<if_statement> ::= "if" "(" <expression> ")" "then"
-                      <statement>*
-                   ("elsif" "(" <expression> ")" "then" <statement>* )*
-                   ("else" <statement>* )?
-                   "endif"
-
-<for_loop> ::= "for" "(" <for_init>? ";" <expression>? ";" <for_update>? ")" "then"
-                  <statement>*
-               "endfor"
-<for_init> ::= <variable_declaration_statement> | <expression_list>
-<for_update> ::= <expression_list>
-
-<while_loop> ::= "while" "(" <expression> ")" "then"
-                    <statement>*
-                 "endwhile"
-
-<return_statement> ::= "return" <expression>? ";"
-
-<try_catch_statement> ::= "try"
-                             <statement>*
-                          "catch" "(" <identifier> <identifier> ")" // e.g. (ExceptionType e)
-                             <statement>*
-                          "endtry"
-
-<throw_statement> ::= "throw" <expression> ";"
-
-<expression_statement> ::= <expression> ";"
-
-<expression> ::= <assignment_expression> // Lowest precedence
-
-<assignment_expression> ::= <conditional_expression> | <lvalue> <assignment_operator> <expression>
-
-<conditional_expression> ::= <logical_or_expression> ( "?" <expression> ":" <conditional_expression> )?
-
-<logical_or_expression> ::= <logical_and_expression> ( "or" <logical_and_expression> )*
-
-<logical_and_expression> ::= <bitwise_or_expression> ( "and" <bitwise_or_expression> )*
-
-<bitwise_or_expression> ::= <bitwise_xor_expression> ( "|" <bitwise_xor_expression> )*
-
-<bitwise_xor_expression> ::= <bitwise_and_expression> ( "^" <bitwise_and_expression> )*
-
-<bitwise_and_expression> ::= <equality_expression> ( "&" <equality_expression> )*
-
-<equality_expression> ::= <relational_expression> ( ("==" | "!=") <relational_expression> )*
-
-<relational_expression> ::= <shift_expression> ( (">" | "<" | ">=" | "<=") <shift_expression> )*
-
-<shift_expression> ::= <additive_expression> ( ("<<" | ">>") <additive_expression> )*
-
-<additive_expression> ::= <multiplicative_expression> ( ("+" | "-") <multiplicative_expression> )*
-
-<multiplicative_expression> ::= <unary_expression> ( ("*" | "/" | "%") <unary_expression> )*
-
-<unary_expression> ::= <postfix_expression>
-                     | ("+" | "-" | "~") <unary_expression>
-                     | ("++" | "--") <lvalue> // Pre-increment/decrement
-
-<postfix_expression> ::= <primary_expression>
-                       | <postfix_expression> "++" // Post-increment
-                       | <postfix_expression> "--" // Post-decrement
-                       | <postfix_expression> "[" <expression> "]" // Array access
-                       | <postfix_expression> "." <identifier> // Member access
-                       | <postfix_expression> "(" <argument_list>? ")" // Function call
-
-<primary_expression> ::= <literal>
-                       | <identifier>
-                       | "this"
-                       | "(" <expression> ")"
-                       | "new" <type> ( "(" <argument_list>? ")" | "[" <expression> "]" ("[" <expression> "]")* ) // Object or Array creation
-
-<literal> ::= <INTEGER_LITERAL> | <FLOAT_LITERAL> | <CHAR_LITERAL> | <STRING_LITERAL> | <BOOLEAN_LITERAL> | "null" // Assuming null exists
-
-<argument_list> ::= <expression> ("," <expression>)*
-<expression_list> ::= <expression> ("," <expression>)*
-
-<qualified_identifier> ::= <identifier> ("." <identifier>)* // For imports like com.example.MyClass
-
-// Note: This grammar is illustrative and might need refinement based on specific language ambiguities or detailed features.
-// Error handling details (e.g., specific exception types) are simplified.
-// Explicit block statements might be needed depending on scope rules. -->
 
 ---
 
