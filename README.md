@@ -15,7 +15,9 @@ Our own programming language made for TKiK university course.
 
 ### 1. General Goals
 
-The main goal of the Chubby project is to design and implement a custom, object-oriented programming language as part of the TKiK university course. This involves defining the language's syntax and semantics, developing a compiler, and exploring concepts like lexical analysis, parsing, memory management, and error handling.
+The main goal of the Chubby project is to design and implement a custom, object-oriented programming language as part of
+the TKiK university course. This involves defining the language's syntax and semantics, developing a compiler, and
+exploring concepts like lexical analysis, parsing, memory management, and error handling.
 
 ### 2. Translator Type
 
@@ -41,8 +43,6 @@ The main goal of the Chubby project is to design and implement a custom, object-
 | `keyword_ENDFUNCTION`              | `endfunction`              | Keyword 'endfunction'                  |
 | `keyword_CONSTRUCTOR`              | `constructor`              | Keyword 'constructor'                  |
 | `keyword_ENDCONSTRUCTOR`           | `endconstructor`           | Keyword 'endconstructor'               |
-| `keyword_ENUM`                     | `enum`                     | Keyword 'enum'                         |
-| `keyword_ENDENUM`                  | `endenum`                  | Keyword 'endenum'                      |
 | `keyword_IF`                       | `if`                       | Keyword 'if'                           |
 | `keyword_THEN`                     | `then`                     | Keyword 'then'                         |
 | `keyword_ELSIF`                    | `elsif`                    | Keyword 'elsif'                        |
@@ -54,6 +54,7 @@ The main goal of the Chubby project is to design and implement a custom, object-
 | `keyword_ENDWHILE`                 | `endwhile`                 | Keyword 'endwhile'                     |
 | `keyword_TRY`                      | `try`                      | Keyword 'try'                          |
 | `keyword_CATCH`                    | `catch`                    | Keyword 'catch'                        |
+| `keyword_FINALLY`                  | `finally`                  | Keyword 'finally'                      |
 | `keyword_ENDTRY`                   | `endtry`                   | Keyword 'endtry'                       |
 | `keyword_THROW`                    | `throw`                    | Keyword 'throw'                        |
 | `keyword_RETURN`                   | `return`                   | Keyword 'return'                       |
@@ -108,17 +109,12 @@ The main goal of the Chubby project is to design and implement a custom, object-
 | `operator_COMPARISON_LESS_EQ`      | `<=`                       | Comparison operator '<='               |
 | `operator_LOGICAL_AND`             | `and`                      | Logical operator 'and'                 |
 | `operator_LOGICAL_OR`              | `or`                       | Logical operator 'or'                  |
+| `operator_LOGICAL_NOT`             | `not`                      | Logical operator 'not'                 |
 | `operator_BITWISE_AND`             | `&`                        | Bitwise operator '&'                   |
-| `operator_BITWISE_OR`              | `\|`                       | Bitwise operator '\|'                  |
-| `operator_BITWISE_XOR`             | `\^`                       | Bitwise operator '^'                   |
-| `operator_BITWISE_LEFT_SHIFT`      | `<<`                       | Bitwise operator '<<'                  |
-| `operator_BITWISE_RIGHT_SHIFT`     | `>>`                       | Bitwise operator '>>'                  |
 | `bracket_LEFT_PAREN`               | `\(`                       | Bracket '('                            |
 | `bracket_RIGHT_PAREN`              | `\)`                       | Bracket ')'                            |
 | `bracket_LEFT_SQUARE`              | `\[`                       | Bracket '['                            |
 | `bracket_RIGHT_SQUARE`             | `\]`                       | Bracket ']'                            |
-| `bracket_LEFT_BRACE`               | `\{`                       | Bracket '{'                            |
-| `bracket_RIGHT_BRACE`              | `\}`                       | Bracket '}'                            |
 | `separator_COMMA`                  | `,`                        | Separator ','                          |
 | `separator_SEMICOLON`              | `;`                        | Separator ';'                          |
 | `separator_DOT`                    | `\.`                       | Separator '.' (member access)          |
