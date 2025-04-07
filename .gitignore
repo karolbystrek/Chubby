@@ -6,6 +6,8 @@ build/
 dist/
 nbdist/
 
+/gen
+
 dependency-reduced-pom.xml
 
 # Logs

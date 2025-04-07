@@ -13,7 +13,9 @@ qualified_identifier
     ;
 
 class_definition
-    : CLASS IDENTIFIER
+    : CLASS
+    visibility_modifier
+    IDENTIFIER
     ( EXTENDS qualified_identifier )?
     ( IMPLEMENTS qualified_identifier ( COMMA qualified_identifier )* )?
     class_body
@@ -31,17 +33,25 @@ class_member
     ;
 
 constructor_definition
-    : CONSTRUCTOR /* Placeholder */
+    : CONSTRUCTOR
+    IDENTIFIER
+    LEFT_PAREN parameter_list? RIGHT_PAREN
+    constructor_body
     ENDCONSTRUCTOR
     ;
 
+constructor_body
+    : statement*
+    ;
+
 variable_definition
-    : visibility_modifier? type_specifier IDENTIFIER ( ASSIGN expression )? SEMICOLON
+    : visibility_modifier type_specifier ( LEFT_SQUARE RIGHT_SQUARE )* STATIC? IDENTIFIER ( ASSIGN expression )? SEMICOLON
     ;
 
 function_definition
     : FUNCTION
-    visibility_modifier?
+    visibility_modifier
+    STATIC?
     IDENTIFIER
     LEFT_PAREN parameter_list? RIGHT_PAREN
     COLON return_type
@@ -60,16 +70,15 @@ parameter_list
     ;
 
 parameter
-    : type_specifier IDENTIFIER
+    : type_specifier (LEFT_SQUARE RIGHT_SQUARE )* IDENTIFIER
     ;
 
 type_specifier
-    : BYTE | BOOL | INT | FLOAT | DOUBLE | CHAR | STRING | LONG
-    | qualified_identifier
+    : ( BYTE | BOOL | INT | FLOAT | DOUBLE | CHAR | STRING | LONG | qualified_identifier )
     ;
 
 return_type
-    : type_specifier
+    : type_specifier (LEFT_SQUARE RIGHT_SQUARE )*
     | VOID
     ;
 
@@ -100,7 +109,7 @@ simple_statement
     ;
 
 local_variable_declaration
-    : type_specifier IDENTIFIER ( ASSIGN expression )?
+    : type_specifier ( LEFT_SQUARE RIGHT_SQUARE)* IDENTIFIER ( ASSIGN expression )?
     ;
 
 assignment_statement
@@ -150,15 +159,29 @@ if_statement
     ENDIF
     ;
 
-// TODO: Implement for statement
 for_statement
-    : FOR /* Placeholder */
+    : FOR
+    LEFT_PAREN for_init? SEMICOLON expression? SEMICOLON for_update? RIGHT_PAREN
+    THEN
+    statement*
     ENDFOR
     ;
 
-// TODO: Implement while statemet
+for_init
+    : local_variable_declaration
+    | assignment_statement
+    ;
+
+for_update
+    : assignment_statement
+    | expression
+    ;
+
 while_statement
-    : FOR /* Placeholder */
+    : WHILE
+    LEFT_PAREN expression RIGHT_PAREN
+    THEN
+    statement*
     ENDWHILE
     ;
 
@@ -191,8 +214,8 @@ multiplicativeExpression
     ;
 
 unaryExpression
-    : postfixExpression
-    | ( PLUS | MINUS | NOT ) unaryExpression
+    : ( PLUS | MINUS | NOT ) unaryExpression
+    | postfixExpression
     ;
 
 postfixExpression
@@ -209,7 +232,7 @@ primaryExpression
     | LEFT_PAREN expression RIGHT_PAREN
     | object_creation
     | THIS
-    ;
+;
 
 argument_list
     : expression ( COMMA expression )*
@@ -217,7 +240,7 @@ argument_list
 
 object_creation
     : NEW type_specifier LEFT_PAREN argument_list? RIGHT_PAREN // Object: new MyClass(args)
-    | NEW type_specifier LEFT_SQUARE expression RIGHT_SQUARE // Array: new int[size]
+    | NEW type_specifier ( LEFT_SQUARE expression RIGHT_SQUARE )+ // Array: new int[size]
     ;
 
 literal
@@ -296,8 +319,6 @@ MINUS: '-';
 MULTIPLY: '*';
 DIVIDE: '/';
 MODULO: '%';
-INCREMENT: '++';
-DECREMENT: '--';
 ASSIGN: '=';
 PLUS_ASSIGN: '+=';
 MINUS_ASSIGN: '-=';

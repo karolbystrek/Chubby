@@ -6,15 +6,16 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class Main {
 
     public static void main(String[] args) {
-        String chubbyCode =
-                "public class MinimalApp\n" +          // Correct syntax: modifier first, then 'class', then name
-                        "    # A minimal main function\n" +
-                        "    function public static main() : void\n" + // Added 'static' based on your example convention
-                        "        int testVar = 100;\n" +             // Simple variable declaration
-                        "        testVar = testVar + 5;\n" +          // Simple assignment/expression
-                        "        print(\"Minimal Chubby Code Executed: \" + testVar);\n" + // Assuming print and string concat work
-                        "    endfunction\n" +                     // End the function
-                        "endclass\n";
+        String chubbyCode = """
+                class public MinimalApp
+                    # A minimal main function
+                    function public main() : void
+                        int testVar = 100;
+                        testVar = testVar + 5;
+                        print("Minimal Chubby Code Executed: " + testVar);
+                    endfunction
+                endclass
+                """;
         CharStream input = CharStreams.fromString(chubbyCode);
 
         ChubbyParser parser = getChubbyParser(input);

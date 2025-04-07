@@ -73,6 +73,7 @@ exploring concepts like lexical analysis, parsing, memory management, and error 
 | `keyword_NULL`                     | `null`                     | Keyword 'null'                         |
 | `keyword_CONTINUE`                 | `continue`                 | Keyword 'continue'                     |
 | `keyword_BREAK`                    | `break`                    | Keyword 'break'                        |
+| `keyword_PRINT`                    | `print`                    | Keyword 'print'                        |
 | `type_BYTE`                        | `byte`                     | Type keyword 'byte'                    |
 | `type_INT`                         | `int`                      | Type keyword 'int'                     |
 | `type_FLOAT`                       | `float`                    | Type keyword 'float'                   |
@@ -93,8 +94,6 @@ exploring concepts like lexical analysis, parsing, memory management, and error 
 | `operator_ARITHMETIC_MULTIPLY`     | `\*`                       | Arithmetic operator '*'                |
 | `operator_ARITHMETIC_DIVIDE`       | `/`                        | Arithmetic operator '/'                |
 | `operator_ARITHMETIC_MODULO`       | `%`                        | Arithmetic operator '%'                |
-| `operator_ARITHMETIC_INCREMENT`    | `\+\+`                     | Arithmetic operator '++'               |
-| `operator_ARITHMETIC_DECREMENT`    | `--`                       | Arithmetic operator '--'               |
 | `operator_ASSIGNMENT_ASSIGN`       | `=`                        | Assignment operator '='                |
 | `operator_ASSIGNMENT_PLUS_ASSIGN`  | `\+=`                      | Assignment operator '+='               |
 | `operator_ASSIGNMENT_MINUS_ASSIGN` | `-=`                       | Assignment operator '-='               |
@@ -128,19 +127,11 @@ exploring concepts like lexical analysis, parsing, memory management, and error 
 
 ### 1. Notation
 
-<!-- * **BNF (Backus-Naur Form)** - Extended syntax used below for clarity (e.g., `*` for zero or more, `?` for optional).
-    **[Placeholder: Confirm or change if using a different notation like ANTLR's]** -->
-
 ### 2. Grammar Definition
 
 ---
 
 ## Tools and Dependencies
-
-<!-- * **Scanner/Parser Generators:** **[Placeholder: e.g., ANTLR 4, Flex + Bison, None (Manual Implementation)]**
-* **External Packages/Libraries:** **[Placeholder: e.g., LLVM C++ API 15.x, None]**
-* **Build System:** **[Placeholder: e.g., Make, CMake, Gradle, Python setuptools]**
-* **Compiler/Interpreter for Build:** **[Placeholder: Specify required language/compiler version used to build Chubby, e.g., GCC 11+, Python 3.9+, Java 17+]** -->
 
 ---
 
@@ -158,7 +149,7 @@ Below is a simple example demonstrating some features of the Chubby language.
 import SomePackage.Entity;
 
 # Main application class containing the entry point and utility methods
-public class ExampleApp
+class public ExampleApp
 
     # Entry point method for the application
     # Assumed to be static for execution like Java's main
@@ -183,10 +174,6 @@ public class ExampleApp
         int quotient = divide(b, a);
         int modulo = b % a;
 
-        # Test increment and decrement
-        a++;
-        b--;
-
         # Test compound assignment operators
         int x = 5;
         x += 3;   # x is now 8
@@ -196,7 +183,7 @@ public class ExampleApp
         x %= 2;   # x is now 0
 
         # Test comparison and logical operators
-        if (a > b and b < 30) then
+        if a > b and b < 30 then
             # Assuming 'print' is a built-in or globally accessible function
             print("Complex condition is true");
         endif
@@ -215,7 +202,7 @@ public class ExampleApp
         endif
 
         # Test different types of loops
-        for (int i = 0; i < 3; i++) then
+        for (int i = 0; i < 3; i += 1) then
             while (i < 2) then
                 print("Nested loop: " + i); # Assuming string concatenation with int works
                 break;
@@ -244,7 +231,7 @@ public class ExampleApp
             print("Attempting division by zero...");
             int error = divide(10, 0); # Calling the static method
             print("This should not be printed.");
-        catch
+        catch (Exception e)
             print("Division by zero caught!");
         endtry
 
@@ -275,9 +262,9 @@ endclass # End of ExampleApp class
 
 
 # Separate class definition for Person
-public class Person implements Entity
-    string name;
-    int age;
+class public Person implements Entity
+    public string name;
+    public int age;
 
     # Constructor for Person class
     constructor Person(string name, int age)
