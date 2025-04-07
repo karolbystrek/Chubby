@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.karolbystrek</groupId>
     <artifactId>ChubbyCompiler</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>Archetype - ChubbyCompiler</name>
     <url>https://github.com/karolbystrek/Chubby</url>
 
@@ -119,6 +119,7 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <finalName>${project.artifactId}</finalName>
                         </configuration>
                     </execution>
                 </executions>
