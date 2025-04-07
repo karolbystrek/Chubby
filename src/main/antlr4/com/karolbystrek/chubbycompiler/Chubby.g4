@@ -152,9 +152,9 @@ try_catch_statement
     ;
 
 if_statement
-    : IF expression THEN
+    : IF LEFT_PAREN expression RIGHT_PAREN THEN
     statement*
-    ( ELSIF expression THEN statement* )*
+    ( ELSIF LEFT_PAREN expression RIGHT_PAREN THEN statement* )*
     ( ELSE statement* )?
     ENDIF
     ;
@@ -215,7 +215,7 @@ multiplicativeExpression
 
 unaryExpression
     : ( PLUS | MINUS | NOT ) unaryExpression
-    | postfixExpression
+    |  postfixExpression
     ;
 
 postfixExpression
@@ -295,31 +295,12 @@ CHAR: 'char';
 STRING: 'string';
 LONG: 'long';
 
-// literals
-FLOAT_LITERAL
-    : ( [0-9]+  '.' [0-9]* | '.' [0-9]+ ) ( [eE] [+\-]? [0-9]+ )? [fF]
-    | [0-9]+ ( [eE] [+\-]? [0-9]+ )? [fF]
-    ;
-DOUBLE_LITERAL
-    : ( [0-9]+ '.' [0-9]* | '.' [0-9]+ ) ( [eE] [+\-]? [0-9]+ )? [dD]?
-    | [0-9]+ [eE] [+\-]? [0-9]+ [dD]?
-    | [0-9]+ [dD]
-    ;
-INTEGER_LITERAL: [0-9]+;
-CHAR_LITERAL: '\'' ( '\\' [nt\\'"] | ~['\\] ) '\'';
-STRING_LITERAL: '"' ( ~["\\] | '\\' . )* '"';
+AND: 'and';
+OR: 'or';
+NOT: 'not';
 BOOL_LITERAL: 'true' | 'false';
 
-// identifiers
-IDENTIFIER: [a-zA-Z_] [a-zA-Z0-9_]*;
-
 // operators
-PLUS: '+';
-MINUS: '-';
-MULTIPLY: '*';
-DIVIDE: '/';
-MODULO: '%';
-ASSIGN: '=';
 PLUS_ASSIGN: '+=';
 MINUS_ASSIGN: '-=';
 MULTIPLY_ASSIGN: '*=';
@@ -327,13 +308,17 @@ DIVIDE_ASSIGN: '/=';
 MODULO_ASSIGN: '%=';
 EQUAL: '==';
 NOT_EQUAL: '!=';
-LESS: '<';
-GREATER: '>';
 LESS_EQUAL: '<=';
 GREATER_EQUAL: '>=';
-AND: 'and';
-OR: 'or';
-NOT: 'not';
+
+PLUS: '+';
+MINUS: '-';
+MULTIPLY: '*';
+DIVIDE: '/';
+MODULO: '%';
+ASSIGN: '=';
+LESS: '<';
+GREATER: '>';
 
 
 // brackets
@@ -347,6 +332,23 @@ COMMA: ',';
 SEMICOLON: ';';
 DOT: '.';
 COLON: ':';
+
+// literals
+FLOAT_LITERAL
+    : ( [0-9]+  '.' [0-9]* | '.' [0-9]+ ) ( [eE] [+\-]? [0-9]+ )? [fF]
+    | [0-9]+ ( [eE] [+\-]? [0-9]+ )? [fF]
+    ;
+DOUBLE_LITERAL
+    : ( [0-9]+ '.' [0-9]* | '.' [0-9]+ ) ( [eE] [+\-]? [0-9]+ )? [dD]?
+    | [0-9]+ [eE] [+\-]? [0-9]+ [dD]?
+    | [0-9]+ [dD]
+    ;
+INTEGER_LITERAL: [0-9]+;
+CHAR_LITERAL: '\'' ( '\\' [nt\\'"] | ~['\\] ) '\'';
+STRING_LITERAL: '"' ( ~["\\] | '\\' . )* '"';
+
+// identifiers
+IDENTIFIER: [a-zA-Z_] [a-zA-Z0-9_]*;
 
 // comments
 LINE_COMMENT: '#' ~[\r\n]* -> skip;
