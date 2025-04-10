@@ -1,4 +1,4 @@
-<h1 style="color:magenta;">Chubby</h1>
+# Chubby
 
 Our own programming language made for *Teoria Kompilacji i Kompilatory* university course.
 
