@@ -1,7 +1,6 @@
 package com.karolbystrek.chubbycompiler;
 
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.File;
 import java.io.FileReader;
@@ -26,7 +25,7 @@ public class Main {
         ChubbyParser parser = getChubbyParser(input);
 
         try {
-            ParseTree tree = parser.program();
+            parser.program();
 
             if (parser.getNumberOfSyntaxErrors() > 0) {
                 System.out.println("Parsing failed with errors.");

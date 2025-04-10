@@ -81,6 +81,8 @@ keywords before `IDENTIFIER`) is important for correct recognition.
 | `THIS`             | `'this'`                                                                                                                 | Keyword 'this'                          |
 | `VOID`             | `'void'`                                                                                                                 | Keyword 'void'                          |
 | `NULL`             | `'null'`                                                                                                                 | Keyword 'null'                          |
+| `TRUE`             | `'true'`                                                                                                                 | Keyword 'true'                          |
+| `FALSE`            | `'false'`                                                                                                                | Keyword 'false'                         |
 | `BYTE`             | `'byte'`                                                                                                                 | Type keyword 'byte'                     |
 | `BOOL`             | `'bool'`                                                                                                                 | Type keyword 'bool'                     |
 | `INT`              | `'int'`                                                                                                                  | Type keyword 'int'                      |
@@ -92,7 +94,6 @@ keywords before `IDENTIFIER`) is important for correct recognition.
 | `AND`              | `'and'`                                                                                                                  | Logical operator 'and'                  |
 | `OR`               | `'or'`                                                                                                                   | Logical operator 'or'                   |
 | `NOT`              | `'not'`                                                                                                                  | Logical operator 'not'                  |
-| `BOOL_LITERAL`     | `'true' \| 'false'`                                                                                                      | Boolean literal ('true' or 'false')     |
 | `PLUS_ASSIGN`      | `'+='`                                                                                                                   | Assignment operator '+='                |
 | `MINUS_ASSIGN`     | `'-='`                                                                                                                   | Assignment operator '-='                |
 | `MULTIPLY_ASSIGN`  | `'*='`                                                                                                                   | Assignment operator '*='                |

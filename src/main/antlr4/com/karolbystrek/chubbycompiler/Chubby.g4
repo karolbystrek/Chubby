@@ -244,10 +244,9 @@ object_creation
     ;
 
 literal
-    : INTEGER_LITERAL | FLOAT_LITERAL | DOUBLE_LITERAL |  CHAR_LITERAL | STRING_LITERAL | BOOL_LITERAL | NULL
+    : INTEGER_LITERAL | FLOAT_LITERAL | DOUBLE_LITERAL |  CHAR_LITERAL | STRING_LITERAL | TRUE | FALSE | NULL
     ;
 
-// keywords
 CLASS : 'class';
 ENDCLASS : 'endclass';
 FUNCTION : 'function';
@@ -284,8 +283,9 @@ NEW: 'new';
 THIS: 'this';
 VOID: 'void';
 NULL: 'null';
+TRUE: 'true';
+FALSE: 'false';
 
-// types
 BYTE: 'byte';
 BOOL: 'bool';
 INT: 'int';
@@ -298,9 +298,7 @@ LONG: 'long';
 AND: 'and';
 OR: 'or';
 NOT: 'not';
-BOOL_LITERAL: 'true' | 'false';
 
-// operators
 PLUS_ASSIGN: '+=';
 MINUS_ASSIGN: '-=';
 MULTIPLY_ASSIGN: '*=';
@@ -320,20 +318,16 @@ ASSIGN: '=';
 LESS: '<';
 GREATER: '>';
 
-
-// brackets
 LEFT_PAREN: '(';
 RIGHT_PAREN: ')';
 LEFT_SQUARE: '[';
 RIGHT_SQUARE: ']';
 
-// separators
 COMMA: ',';
 SEMICOLON: ';';
 DOT: '.';
 COLON: ':';
 
-// literals
 FLOAT_LITERAL
     : ( [0-9]+  '.' [0-9]* | '.' [0-9]+ ) ( [eE] [+\-]? [0-9]+ )? [fF]
     | [0-9]+ ( [eE] [+\-]? [0-9]+ )? [fF]
@@ -347,11 +341,8 @@ INTEGER_LITERAL: [0-9]+;
 CHAR_LITERAL: '\'' ( '\\' [nt\\'"] | ~['\\] ) '\'';
 STRING_LITERAL: '"' ( ~["\\] | '\\' . )* '"';
 
-// identifiers
 IDENTIFIER: [a-zA-Z_] [a-zA-Z0-9_]*;
 
-// comments
 LINE_COMMENT: '#' ~[\r\n]* -> skip;
 
-// whitespace
 WS: [ \t\r\n]+ -> skip;
