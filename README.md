@@ -25,7 +25,7 @@ exploring concepts like lexical analysis, parsing, memory management, and error 
 
 ### 3. Planned Output
 
-The planned output is a compiler for the Chubby language that transforms `.cbb` source code into **JVM bytecode** .
+The planned output is a compiler for the Chubby language that transforms `.cbb` source code into **JVM bytecode**.
 
 ### 4. Implementation Language
 
