@@ -1,32 +1,24 @@
 import SomePackage.Entity;
 
-# Main application class containing the entry point and utility methods
 class public ExampleApp
 
-    # Entry point method for the application
-    # Assumed to be static for execution like Java's main
     function public static main() : void
-        # Test integer and float declarations
         int integerVar = 42;
         float floatVar = 3.14;
         double doubleVar = 2.718;
 
-        # Test string and boolean declarations
         string message = "Hello, World!";
         bool isTrue = true;
         bool isFalse = false;
 
-        # Test arithmetic operations
         int a = 10;
         int b = 20;
-        # Calls to static methods within the same class
         int sum = add(a, b);
         int difference = b - a;
         int product = multiply(a, b);
         int quotient = divide(b, a);
         int modulo = b % a;
 
-        # Test compound assignment operators
         int x = 5;
         x += 3;   # x is now 8
         x -= 2;   # x is now 6
@@ -34,29 +26,27 @@ class public ExampleApp
         x /= 3;   # x is now 4
         x %= 2;   # x is now 0
 
-        # Test comparison and logical operators
-        if (a > b and a < b) then # Requires parentheses
+        if (a > b and a < b) then
             print("Complex condition is true");
-        elsif (a > b) then # Requires parentheses
+        elsif (a > b) then
             print("a>b");
         endif
 
-        if (a == b or a != b) then # Requires parentheses
+        if (a == b or a != b) then
             print("Equality and inequality test");
         endif
 
         # Test nested conditionals
-        if (integerVar > 40) then # Requires parentheses
-            if (floatVar < 4.0) then # Requires parentheses
+        if (integerVar > 40) then
+            if (floatVar < 4.0) then
                 print("Nested condition met");
             else
                 print("Outer condition true, inner false");
             endif
         endif
 
-        # Test different types of loops
         for (int i = 0; i < 3; i += 1) then
-            while (i < 2) then # Requires parentheses
+            while (i < 2) then
                 print("Nested loop: " + i);
                 break;
             endwhile
@@ -79,29 +69,26 @@ class public ExampleApp
 
         try
             print("Attempting division by zero...");
-            int error = divide(10, 0); # Calling the static method
+            int error = divide(10, 0);
             print("This should not be printed.");
-        catch (Exception e) # Assuming a base Exception type exists
+        catch (Exception e)
             print("Division by zero caught!");
         endtry
 
         Person person = new Person("John", 30);
-        person.get(); # Calling an instance method
+        person.get();
 
         print("Execution finished.");
-    endfunction # End of main method
+    endfunction
 
     function public static add(int x, int y) : int
         return x + y;
     endfunction
 
-    # Utility function for multiplication (now a static method of ExampleApp)
     function public static multiply(int x, int y) : int
         return x * y;
     endfunction
 
-    # Utility function for division (now a static method of ExampleApp)
-    # Intentionally allows division by zero to test try-catch
     function public static divide(int x, int y) : int
         return x / y;
     endfunction
@@ -109,20 +96,17 @@ class public ExampleApp
 endclass # End of ExampleApp class
 
 
-# Separate class definition for Person
-class public Person implements Entity # Assuming Entity interface/class exists
+class public Person implements Entity
     public string name;
     public int age;
 
-    # Constructor for Person class
     constructor Person(string name, int age)
         this.name = name;
         this.age = age;
     endconstructor
 
-    # Instance method for Person class
     function public get() : void
         print("Hello, my name is " + name + " and I am " + age + " years old");
     endfunction
 
-endclass # End of Person class
+endclass
