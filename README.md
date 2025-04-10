@@ -1,6 +1,6 @@
 # Chubby
 
-Our own programming language made for TKiK university course.
+Our own programming language made for *Teoria Kompilacji i Kompilatory* university course.
 
 ---
 
