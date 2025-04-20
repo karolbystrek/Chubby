@@ -16,8 +16,8 @@ class_definition
     : CLASS
     visibility_modifier
     IDENTIFIER
-    ( EXTENDS qualified_identifier )?
-    ( IMPLEMENTS qualified_identifier ( COMMA qualified_identifier )* )?
+    ( extends_clause )?
+    ( implements_clause )?
     class_body
     ENDCLASS
     ;
@@ -30,6 +30,14 @@ class_member
     : function_definition
     | constructor_definition
     | variable_definition
+    ;
+
+extends_clause
+    : EXTENDS qualified_identifier
+    ;
+
+implements_clause
+    : IMPLEMENTS qualified_identifier ( COMMA qualified_identifier )*
     ;
 
 constructor_definition
@@ -45,7 +53,7 @@ constructor_body
     ;
 
 variable_definition
-    : visibility_modifier type_specifier ( LEFT_SQUARE RIGHT_SQUARE )* STATIC? IDENTIFIER ( ASSIGN expression )? SEMICOLON
+    : visibility_modifier STATIC? CONST? type_specifier ( LEFT_SQUARE RIGHT_SQUARE )*  IDENTIFIER ( ASSIGN expression )? SEMICOLON
     ;
 
 function_definition
