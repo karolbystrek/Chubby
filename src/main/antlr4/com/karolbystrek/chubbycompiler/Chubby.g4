@@ -151,16 +151,16 @@ try_catch_statement
     ;
 
 if_statement
-    : IF LEFT_PAREN expression RIGHT_PAREN THEN
+    : IF LEFT_PAREN boolean_expression RIGHT_PAREN THEN
     statement*
-    ( ELSIF LEFT_PAREN expression RIGHT_PAREN THEN statement* )*
+    ( ELSIF LEFT_PAREN boolean_expression RIGHT_PAREN THEN statement* )*
     ( ELSE statement* )?
     ENDIF
     ;
 
 for_statement
     : FOR
-    LEFT_PAREN for_init? SEMICOLON expression? SEMICOLON for_update? RIGHT_PAREN
+    LEFT_PAREN for_init? SEMICOLON boolean_expression? SEMICOLON for_update? RIGHT_PAREN
     DO
     statement*
     ENDFOR
@@ -178,10 +178,14 @@ for_update
 
 while_statement
     : WHILE
-    LEFT_PAREN expression RIGHT_PAREN
+    LEFT_PAREN boolean_expression RIGHT_PAREN
     DO
     statement*
     ENDWHILE
+    ;
+
+boolean_expression
+    : logicalOrExpression
     ;
 
 expression
