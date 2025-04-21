@@ -63,14 +63,17 @@ The full ANTLR4 grammar definition for Chubby can be found in the following file
     * ANTLR4 Java Runtime library (if not managed by the build system).
 
 2. **Compiling the Translator:**
+
    ```bash
    mvn clean package
    ```
 
 3. **Running the Compiler:**
+
    ```bash
    java -jar target/ChubbyCompiler.jar input_file.cbb
    ```
+
    Where `input_file.cbb` is your Chubby source code file.
 
 ## Usage Example

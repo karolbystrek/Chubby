@@ -16,8 +16,6 @@ class_definition
     : CLASS
     visibility_modifier
     IDENTIFIER
-    ( extends_clause )?
-    ( implements_clause )?
     class_body
     ENDCLASS
     ;
@@ -32,16 +30,9 @@ class_member
     | variable_definition
     ;
 
-extends_clause
-    : EXTENDS qualified_identifier
-    ;
-
-implements_clause
-    : IMPLEMENTS qualified_identifier ( COMMA qualified_identifier )*
-    ;
-
 constructor_definition
     : CONSTRUCTOR
+    visibility_modifier?
     IDENTIFIER
     LEFT_PAREN parameter_list? RIGHT_PAREN
     constructor_body
@@ -170,7 +161,7 @@ if_statement
 for_statement
     : FOR
     LEFT_PAREN for_init? SEMICOLON expression? SEMICOLON for_update? RIGHT_PAREN
-    THEN
+    DO
     statement*
     ENDFOR
     ;
@@ -188,7 +179,7 @@ for_update
 while_statement
     : WHILE
     LEFT_PAREN expression RIGHT_PAREN
-    THEN
+    DO
     statement*
     ENDWHILE
     ;
@@ -266,6 +257,7 @@ THEN: 'then';
 ELSIF: 'elsif';
 ELSE: 'else';
 ENDIF: 'endif';
+DO; 'do';
 FOR: 'for';
 ENDFOR: 'endfor';
 WHILE: 'while';
@@ -278,8 +270,6 @@ FINALLY: 'finally';
 ENDTRY: 'endtry';
 THROW: 'throw';
 RETURN: 'return';
-EXTENDS: 'extends';
-IMPLEMENTS: 'implements';
 PUBLIC: 'public';
 PRIVATE: 'private';
 PROTECTED: 'protected';
