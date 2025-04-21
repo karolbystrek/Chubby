@@ -1,3 +1,5 @@
+# Token Description Table
+
 | Token Name (ANTLR) | Literal/Pattern (ANTLR)                                                                                                  | Description                             |
 |:-------------------|:-------------------------------------------------------------------------------------------------------------------------|:----------------------------------------|
 | `CLASS`            | `'class'`                                                                                                                | Keyword 'class'                         |
@@ -11,6 +13,7 @@
 | `ELSIF`            | `'elsif'`                                                                                                                | Keyword 'elsif'                         |
 | `ELSE`             | `'else'`                                                                                                                 | Keyword 'else'                          |
 | `ENDIF`            | `'endif'`                                                                                                                | Keyword 'endif'                         |
+| `DO`               | `'do'`                                                                                                                   | Keyword 'do'                            |
 | `FOR`              | `'for'`                                                                                                                  | Keyword 'for'                           |
 | `ENDFOR`           | `'endfor'`                                                                                                               | Keyword 'endfor'                        |
 | `WHILE`            | `'while'`                                                                                                                | Keyword 'while'                         |
@@ -23,8 +26,6 @@
 | `ENDTRY`           | `'endtry'`                                                                                                               | Keyword 'endtry'                        |
 | `THROW`            | `'throw'`                                                                                                                | Keyword 'throw'                         |
 | `RETURN`           | `'return'`                                                                                                               | Keyword 'return'                        |
-| `EXTENDS`          | `'extends'`                                                                                                              | Keyword 'extends'                       |
-| `IMPLEMENTS`       | `'implements'`                                                                                                           | Keyword 'implements'                    |
 | `PUBLIC`           | `'public'`                                                                                                               | Keyword 'public'                        |
 | `PRIVATE`          | `'private'`                                                                                                              | Keyword 'private'                       |
 | `PROTECTED`        | `'protected'`                                                                                                            | Keyword 'protected'                     |
@@ -74,8 +75,8 @@
 | `SEMICOLON`        | `';'`                                                                                                                    | Semicolon separator ';'                 |
 | `DOT`              | `'.'`                                                                                                                    | Dot separator '.' (member access)       |
 | `COLON`            | `':'`                                                                                                                    | Colon separator ':'                     |
-| `FLOAT_LITERAL`    | `([0-9]+ '.' [0-9]* \| '.' [0-9]+) ([eE] [+\-]? [0-9]+)? [fF]` <br> `\| [0-9]+ ([eE] [+\-]? [0-9]+)? [fF]`               | Float literal                           |
-| `DOUBLE_LITERAL`   | `([0-9]+ '.' [0-9]* \| '.' [0-9]+) ([eE] [+\-]? [0-9]+)? [dD]?` <br> `\| [0-9]+ [eE] [+\-]? [0-9]+ [dD]? \| [0-9]+ [dD]` | Double literal                          |
+| `FLOAT_LITERAL`    | `([0-9]+ '.' [0-9]* \| '.' [0-9]+) ([eE] [+\-]? [0-9]+)? [fF] \| [0-9]+ ([eE] [+\-]? [0-9]+)? [fF]`               | Float literal                           |
+| `DOUBLE_LITERAL`   | `([0-9]+ '.' [0-9]* \| '.' [0-9]+) ([eE] [+\-]? [0-9]+)? [dD]? \| [0-9]+ [eE] [+\-]? [0-9]+ [dD]? \| [0-9]+ [dD]` | Double literal                          |
 | `INTEGER_LITERAL`  | `[0-9]+`                                                                                                                 | Integer literal                         |
 | `CHAR_LITERAL`     | `'\'' ( '\\' [nt\\'"] \| ~['\\] ) '\''`                                                                                  | Character literal                       |
 | `STRING_LITERAL`   | `'"' ( ~["\\] \| '\\' . )* '"'`                                                                                          | String literal                          |
