@@ -261,7 +261,7 @@ THEN: 'then';
 ELSIF: 'elsif';
 ELSE: 'else';
 ENDIF: 'endif';
-DO; 'do';
+DO: 'do';
 FOR: 'for';
 ENDFOR: 'endfor';
 WHILE: 'while';
