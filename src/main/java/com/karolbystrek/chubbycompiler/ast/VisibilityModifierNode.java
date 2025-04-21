@@ -1,4 +1,4 @@
-package com.karolbystrek.chubbycompiler;
+package com.karolbystrek.chubbycompiler.ast;
 
 public class VisibilityModifierNode extends AstNode {
 

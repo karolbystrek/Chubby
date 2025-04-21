@@ -1,5 +1,7 @@
-package com.karolbystrek.chubbycompiler;
+package com.karolbystrek.chubbycompiler.parser;
 
+import com.karolbystrek.chubbycompiler.*;
+import com.karolbystrek.chubbycompiler.ast.*;
 import org.antlr.v4.runtime.tree.RuleNode;
 
 import java.util.ArrayList;
@@ -43,6 +45,56 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
                 ctx.start.getLine(),
                 ctx.start.getCharPositionInLine()
         );
+    }
+
+    @Override
+    public AstNode visitFunction_definition(ChubbyParser.Function_definitionContext ctx) {
+        VisibilityModifierNode visibilityNode = (VisibilityModifierNode) visit(ctx.visibility_modifier());
+        Visibility visibility = visibilityNode != null ?
+                visibilityNode.getVisibility() : Visibility.PRIVATE;
+        boolean isStatic = ctx.STATIC() != null;
+        String functionName = ctx.IDENTIFIER().getText();
+
+        List<AstNode> parameters = new ArrayList<>();
+        if (ctx.parameter_list() != null) {
+            ctx.parameter_list().parameter().forEach(
+                    parameter -> parameters.add(visit(parameter))
+            );
+        }
+
+        AstNode returnType = visit(ctx.return_type());
+
+        List<AstNode> body = new ArrayList<>();
+        if (ctx.function_body() != null) {
+            ctx.function_body().statement().forEach(
+                    statement -> body.add(visit(statement))
+            );
+        }
+
+        return new FunctionDefinitionNode(visibility, isStatic, functionName, parameters, returnType, body,
+                ctx.start.getLine(), ctx.start.getCharPositionInLine());
+    }
+
+    @Override
+    public AstNode visitConstructor_definition(ChubbyParser.Constructor_definitionContext ctx) {
+        String constructorName = ctx.IDENTIFIER().getText();
+
+        List<AstNode> parameters = new ArrayList<>();
+        if (ctx.parameter_list() != null) {
+            ctx.parameter_list().parameter().forEach(
+                    parameter -> parameters.add(visit(parameter))
+            );
+        }
+
+        List<AstNode> body = new ArrayList<>();
+        if (ctx.constructor_body() != null) {
+            ctx.constructor_body().statement().forEach(
+                    statement -> body.add(visit(statement))
+            );
+        }
+
+        return new ConstructorDefinitionNode(constructorName, parameters, body,
+                ctx.start.getLine(), ctx.start.getCharPositionInLine());
     }
 
     @Override
