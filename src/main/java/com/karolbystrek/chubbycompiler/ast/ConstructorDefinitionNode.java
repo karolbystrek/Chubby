@@ -4,17 +4,19 @@ import java.util.List;
 
 public class ConstructorDefinitionNode extends ClassMemberNode {
 
-    private final Visibility visibility = Visibility.PUBLIC;
+    private final Visibility visibility;
     private final String name;
-    private final List<AstNode> parameters;
+    private final List<ParameterNode> parameters;
     private final List<AstNode> body;
 
-    public ConstructorDefinitionNode(String name,
-                                     List<AstNode> parameters,
-                                     List<AstNode> body,
-                                     int lineNumber,
-                                     int columnNumber) {
+    public ConstructorDefinitionNode(Visibility visibility,
+                                        String name,
+                                        List<ParameterNode> parameters,
+                                        List<AstNode> body,
+                                        int lineNumber,
+                                        int columnNumber) {
         super(lineNumber, columnNumber);
+        this.visibility = (visibility != null) ? visibility : Visibility.PUBLIC;
         this.name = name;
         this.parameters = parameters;
         this.body = body;
@@ -30,7 +32,7 @@ public class ConstructorDefinitionNode extends ClassMemberNode {
         return name;
     }
 
-    public List<AstNode> getParameters() {
+    public List<ParameterNode> getParameters() {
         return parameters;
     }
 

@@ -7,15 +7,15 @@ public class FunctionDefinitionNode extends ClassMemberNode {
     private final Visibility visibility;
     private final boolean isStatic;
     private final String name;
-    private final List<AstNode> parameters;
-    private final AstNode returnType;
+    private final List<ParameterNode> parameters;
+    private final TypeNode returnType;
     private final List<AstNode> body;
 
     public FunctionDefinitionNode(Visibility visibility,
                                   boolean isStatic,
                                   String name,
-                                  List<AstNode> parameters,
-                                  AstNode returnType,
+                                  List<ParameterNode> parameters,
+                                  TypeNode returnType,
                                   List<AstNode> body,
                                   int lineNumber,
                                   int columnNumber) {
@@ -42,11 +42,11 @@ public class FunctionDefinitionNode extends ClassMemberNode {
         return isStatic;
     }
 
-    public List<AstNode> getParameters() {
+    public List<ParameterNode> getParameters() {
         return parameters;
     }
 
-    public AstNode getReturnType() {
+    public TypeNode getReturnType() {
         return returnType;
     }
 

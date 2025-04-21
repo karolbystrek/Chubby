@@ -3,17 +3,17 @@ package com.karolbystrek.chubbycompiler.ast;
 public class VariableDefinitionNode extends ClassMemberNode {
 
     private final Visibility visibility;
-    private final String type;
+    private final TypeNode type;
     private final String name;
     private final boolean isStatic;
-    private final boolean isFinal;
+    private final boolean isConst;
     private final AstNode initializer;
 
     public VariableDefinitionNode(Visibility visibility,
-                                  String type,
+                                  TypeNode type,
                                   String name,
                                   boolean isStatic,
-                                  boolean isFinal,
+                                  boolean isConst,
                                   AstNode initializer,
                                   int lineNumber,
                                   int columnNumber) {
@@ -22,7 +22,7 @@ public class VariableDefinitionNode extends ClassMemberNode {
         this.type = type;
         this.name = name;
         this.isStatic = isStatic;
-        this.isFinal = isFinal;
+        this.isConst = isConst;
         this.initializer = initializer;
     }
 
@@ -36,7 +36,7 @@ public class VariableDefinitionNode extends ClassMemberNode {
         return name;
     }
 
-    public String getType() {
+    public TypeNode getType() {
         return type;
     }
 
@@ -44,8 +44,8 @@ public class VariableDefinitionNode extends ClassMemberNode {
         return isStatic;
     }
 
-    public boolean isFinal() {
-        return isFinal;
+    public boolean isConst() {
+        return isConst;
     }
 
     public AstNode getInitializer() {
@@ -59,7 +59,7 @@ public class VariableDefinitionNode extends ClassMemberNode {
                 ", type='" + type + '\'' +
                 ", name='" + name + '\'' +
                 ", isStatic=" + isStatic +
-                ", isFinal=" + isFinal +
+                ", isFinal=" + isConst +
                 ", initializer=" + initializer +
                 ", lineNumber=" + super.getLineNumber() +
                 ", columnNumber=" + super.getColumnNumber() +
