@@ -45,8 +45,8 @@ class public ExampleApp
             endif
         endif
 
-        for (int i = 0; i < 3; i += 1) then
-            while (i < 2) then
+        for (int i = 0; i < 3; i += 1) do
+            while (i < 2) do
                 print("Nested loop: " + i);
                 break;
             endwhile
@@ -96,7 +96,7 @@ class public ExampleApp
 endclass # End of ExampleApp class
 
 
-class public Person implements Entity
+class public Person
     public string name;
     public int age;
 
