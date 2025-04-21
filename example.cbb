@@ -26,19 +26,19 @@ class public ExampleApp
         x /= 3;   # x is now 4
         x %= 2;   # x is now 0
 
-        if (a > b and a < b) then
+        if a > b and a < b then
             print("Complex condition is true");
-        elsif (a > b) then
+        elsif a > b then
             print("a>b");
         endif
 
-        if (a == b or a != b) then
+        if a == b or a != b then
             print("Equality and inequality test");
         endif
 
         # Test nested conditionals
-        if (integerVar > 40) then
-            if (floatVar < 4.0) then
+        if integerVar > 40 then
+            if floatVar < 4.0 then
                 print("Nested condition met");
             else
                 print("Outer condition true, inner false");
@@ -46,7 +46,7 @@ class public ExampleApp
         endif
 
         for (int i = 0; i < 3; i += 1) do
-            while (i < 2) do
+            while i < 2 do
                 print("Nested loop: " + i);
                 break;
             endwhile

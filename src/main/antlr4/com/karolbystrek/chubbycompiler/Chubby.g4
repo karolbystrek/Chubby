@@ -151,9 +151,9 @@ try_catch_statement
     ;
 
 if_statement
-    : IF LEFT_PAREN boolean_expression RIGHT_PAREN THEN
+    : IF boolean_expression THEN
     statement*
-    ( ELSIF LEFT_PAREN boolean_expression RIGHT_PAREN THEN statement* )*
+    ( ELSIF boolean_expression THEN statement* )*
     ( ELSE statement* )?
     ENDIF
     ;
@@ -178,7 +178,7 @@ for_update
 
 while_statement
     : WHILE
-    LEFT_PAREN boolean_expression RIGHT_PAREN
+    boolean_expression
     DO
     statement*
     ENDWHILE
