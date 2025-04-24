@@ -10,17 +10,17 @@ public class AssignmentStatementNode extends StatementNode {
     }
 
     private final LValueNode lValue;
-    private final AssignmentOperator operator;
+    private final AssignmentOperatorNode operatorNode;
     private final ExpressionNode rValue;
 
     public AssignmentStatementNode(LValueNode lValue,
-                                    AssignmentOperator operator,
+                                    AssignmentOperatorNode operatorNode,
                                     ExpressionNode rValue,
                                     int lineNumber,
                                     int columnNumber) {
         super(lineNumber, columnNumber);
         this.lValue = lValue;
-        this.operator = operator;
+        this.operatorNode = operatorNode;
         this.rValue = rValue;
     }
 
@@ -28,8 +28,12 @@ public class AssignmentStatementNode extends StatementNode {
         return lValue;
     }
 
+    public AssignmentOperatorNode getOperatorNode() {
+        return operatorNode;
+    }
+
     public AssignmentOperator getOperator() {
-        return operator;
+        return operatorNode.getOperator();
     }
 
     public ExpressionNode getRValue() {
@@ -40,7 +44,7 @@ public class AssignmentStatementNode extends StatementNode {
     public String toString() {
         return "AssignmentStatementNode{" +
                 "lValue=" + lValue +
-                ", operator=" + operator +
+                ", operator=" + operatorNode.getOperator() +
                 ", rValue=" + rValue +
                 '}';
     }
