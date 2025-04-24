@@ -26,7 +26,7 @@ constructor_definition
     : CONSTRUCTOR
     visibility_modifier?
     IDENTIFIER
-    LEFT_PAREN parameter_list? RIGHT_PAREN
+    LEFT_PAREN ( parameter ( COMMA parameter )* )? RIGHT_PAREN
     statement*
     ENDCONSTRUCTOR
     ;
@@ -40,7 +40,7 @@ function_definition
     visibility_modifier
     STATIC?
     IDENTIFIER
-    LEFT_PAREN parameter_list? RIGHT_PAREN
+    LEFT_PAREN ( parameter ( COMMA parameter )* )? RIGHT_PAREN
     COLON return_type
     statement*
     ENDFUNCTION
@@ -50,10 +50,6 @@ visibility_modifier
     : PUBLIC
     | PRIVATE
     | PROTECTED
-    ;
-
-parameter_list
-    : parameter ( COMMA parameter )*
     ;
 
 parameter
