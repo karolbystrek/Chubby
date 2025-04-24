@@ -4,21 +4,21 @@ import java.util.Objects;
 
 public class ImportStatementNode extends AstNode {
 
-    private final String qualifiedIdentifier;
+    private final String identifier;
 
-    public ImportStatementNode(String qualifiedIdentifier, int lineNumber, int columnNumber) {
+    public ImportStatementNode(String identifier, int lineNumber, int columnNumber) {
         super(lineNumber, columnNumber);
-        this.qualifiedIdentifier = Objects.requireNonNull(qualifiedIdentifier, "Qualified identifier cannot be null");
+        this.identifier = Objects.requireNonNull(identifier, "Qualified identifier cannot be null");
     }
 
-    public String getQualifiedIdentifier() {
-        return qualifiedIdentifier;
+    public String getidentifier() {
+        return identifier;
     }
 
     @Override
     public String toString() {
         return "ImportStatementNode{" +
-                "qualifiedIdentifier='" + qualifiedIdentifier + '\'' +
+                "identifier='" + identifier + '\'' +
                 ", lineNumber=" + getLineNumber() +
                 ", columnNumber=" + getColumnNumber() +
                 '}';
@@ -29,11 +29,11 @@ public class ImportStatementNode extends AstNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ImportStatementNode that = (ImportStatementNode) o;
-        return Objects.equals(qualifiedIdentifier, that.qualifiedIdentifier);
+        return Objects.equals(identifier, that.identifier);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(qualifiedIdentifier);
+        return Objects.hash(identifier);
     }
 }
