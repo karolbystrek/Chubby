@@ -28,7 +28,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Visitor implementation that builds an Abstract Syntax Tree (AST)
@@ -57,12 +56,12 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         List<ImportStatementNode> imports = ctx.import_statement().stream()
                 .map(this::visitImport_statement)
                 .map(ImportStatementNode.class::cast)
-                .collect(Collectors.toList());
+                .toList();
 
         List<ClassDefinitionNode> classDefinitions = ctx.class_definition().stream()
                 .map(this::visitClass_definition)
                 .map(ClassDefinitionNode.class::cast)
-                .collect(Collectors.toList());
+                .toList();
 
         return new ProgramNode(imports, classDefinitions, getLine(ctx), getColumn(ctx));
     }
@@ -80,7 +79,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         List<ClassMemberNode> members = ctx.class_member().stream()
                 .map(this::visitClass_member)
                 .map(ClassMemberNode.class::cast)
-                .collect(Collectors.toList());
+                .toList();
 
         return new ClassDefinitionNode(visibility, name, members, getLine(ctx), getColumn(ctx));
     }
@@ -103,14 +102,15 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
                 ((VisibilityNode) visitVisibility_modifier(ctx.visibility_modifier())).getVisibility() :
                 Visibility.PUBLIC;
         String name = ctx.IDENTIFIER().getText();
-        List<ParameterNode> parameters = ctx.parameter_list() != null ?
-                ((ParameterListNode) visitParameter_list(ctx.parameter_list())).getParameters() :
-                Collections.emptyList();
+        List<ParameterNode> parameters = ctx.parameter().stream()
+                .map(this::visitParameter)
+                .map(ParameterNode.class::cast)
+                .toList();
 
         List<StatementNode> body = ctx.statement().stream()
                 .map(this::visitStatement)
                 .map(StatementNode.class::cast)
-                .collect(Collectors.toList());
+                .toList();
 
         return new ConstructorDefinitionNode(visibility, name, parameters, body, getLine(ctx), getColumn(ctx));
     }
@@ -136,14 +136,15 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         Visibility visibility = ((VisibilityNode) visitVisibility_modifier(ctx.visibility_modifier())).getVisibility();
         boolean isStatic = ctx.STATIC() != null;
         String name = ctx.IDENTIFIER().getText();
-        List<ParameterNode> parameters = ctx.parameter_list() != null ?
-                ((ParameterListNode) visitParameter_list(ctx.parameter_list())).getParameters() :
-                Collections.emptyList();
+        List<ParameterNode> parameters = ctx.parameter().stream()
+                .map(this::visitParameter)
+                .map(ParameterNode.class::cast)
+                .toList();
         TypeNode returnType = (TypeNode) visitReturn_type(ctx.return_type());
         List<StatementNode> body = ctx.statement().stream()
                 .map(this::visitStatement)
                 .map(StatementNode.class::cast)
-                .collect(Collectors.toList());
+                .toList();;
 
         return new FunctionDefinitionNode(visibility, isStatic, name, parameters, returnType, body, getLine(ctx), getColumn(ctx));
     }
@@ -162,30 +163,10 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             visibility = Visibility.PROTECTED;
             token = ctx.PROTECTED().getSymbol();
         } else {
-            // Should not happen based on grammar, but handle defensively
-            visibility = Visibility.PUBLIC; // Or throw an error
-            token = ctx.getStart(); // Use context start token for position
+            visibility = Visibility.PUBLIC;
+            token = ctx.getStart();
         }
         return new VisibilityNode(visibility, getLine(token), getColumn(token));
-    }
-
-    // Helper Node for Parameter List processing
-    private static class ParameterListNode extends AstNode {
-        private final List<ParameterNode> parameters;
-        ParameterListNode(List<ParameterNode> parameters, int line, int col) {
-            super(line, col);
-            this.parameters = parameters;
-        }
-        List<ParameterNode> getParameters() { return parameters; }
-    }
-
-    @Override
-    public AstNode visitParameter_list(ChubbyParser.Parameter_listContext ctx) {
-        List<ParameterNode> parameters = ctx.parameter().stream()
-                .map(this::visitParameter)
-                .map(ParameterNode.class::cast)
-                .collect(Collectors.toList());
-        return new ParameterListNode(parameters, getLine(ctx), getColumn(ctx));
     }
 
     @Override
@@ -225,7 +206,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.simple_statement() != null) {
             return visitSimple_statement(ctx.simple_statement());
         }
-        // Should not happen
         return null;
     }
 
@@ -251,7 +231,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             ExpressionNode expr = (ExpressionNode) visitExpression(ctx.expression());
             return new ExpressionStatementNode(expr, getLine(ctx), getColumn(ctx));
         }
-        // Should not happen
         return null;
     }
 
@@ -270,10 +249,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
     @Override
     public AstNode visitAssignment_statement(ChubbyParser.Assignment_statementContext ctx) {
         LValueNode lValue = (LValueNode) visitLvalue(ctx.lvalue());
-        // Get the AssignmentOperatorNode
         AssignmentOperatorNode operatorNode = (AssignmentOperatorNode) visitAssignment_operator(ctx.assignment_operator());
         ExpressionNode rValue = (ExpressionNode) visitExpression(ctx.expression());
-        // Pass the node to the constructor
         return new AssignmentStatementNode(lValue, operatorNode, rValue, getLine(ctx), getColumn(ctx));
     }
 
@@ -292,7 +269,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             ExpressionNode objectExpr = (ExpressionNode) visitPostfixExpression(ctx.postfixExpression());
             return new MemberAccessNode(objectExpr, ctx.IDENTIFIER().getText(), getLine(ctx), getColumn(ctx));
         }
-        // Should not happen
         return null;
     }
 
@@ -319,10 +295,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             operator = AssignmentStatementNode.AssignmentOperator.MODULUS_ASSIGN;
             token = ctx.MODULO_ASSIGN().getSymbol();
         } else {
-            // Should not happen based on grammar
             throw new IllegalStateException("Unknown assignment operator: " + ctx.getText());
         }
-        // Return the new node type
         return new AssignmentOperatorNode(operator, getLine(token), getColumn(token));
     }
 
@@ -425,7 +399,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.assignment_statement() != null) {
             return visitAssignment_statement(ctx.assignment_statement());
         }
-        return null; // Should not happen
+        return null;
     }
 
     @Override
@@ -433,11 +407,10 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         if (ctx.assignment_statement() != null) {
             return visitAssignment_statement(ctx.assignment_statement());
         } else if (ctx.expression() != null) {
-            // Wrap expression in an ExpressionStatementNode as update can be just an expression
             ExpressionNode expr = (ExpressionNode) visitExpression(ctx.expression());
             return new ExpressionStatementNode(expr, getLine(ctx), getColumn(ctx));
         }
-        return null; // Should not happen
+        return null;
     }
 
     @Override
@@ -449,14 +422,12 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         return new WhileStatementNode(condition, body, getLine(ctx), getColumn(ctx));
     }
 
-    // Helper to create BlockNode from a list of statements within a specific token range
     private BlockNode createBlockNode(List<ChubbyParser.StatementContext> allStatements, int startIndex, int endIndex) {
         List<StatementNode> blockStatements = allStatements.stream()
                 .filter(stmtCtx -> stmtCtx.getStart().getTokenIndex() >= startIndex && stmtCtx.getStop().getTokenIndex() < endIndex)
                 .map(this::visitStatement)
                 .map(StatementNode.class::cast)
-                .collect(Collectors.toList());
-        // Use the start token of the first statement in the block for line/col, or default if empty
+                .toList();
         int line = blockStatements.isEmpty() ? 0 : blockStatements.get(0).getLineNumber();
         int col = blockStatements.isEmpty() ? 0 : blockStatements.get(0).getColumnNumber();
         return new BlockNode(blockStatements, line, col);
@@ -464,13 +435,11 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitBoolean_expression(ChubbyParser.Boolean_expressionContext ctx) {
-        // Boolean expression is just a logicalOrExpression in the grammar
         return visitLogicalOrExpression(ctx.logicalOrExpression());
     }
 
     @Override
     public AstNode visitExpression(ChubbyParser.ExpressionContext ctx) {
-        // Expression is just a logicalOrExpression in the grammar
         return visitLogicalOrExpression(ctx.logicalOrExpression());
     }
 
@@ -541,7 +510,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             } else if (ctx.LESS_EQUAL(i - 1) != null) {
                 op = BinaryExpressionNode.Operator.LESS_EQUAL;
                 opToken = ctx.LESS_EQUAL(i - 1).getSymbol();
-            } else { // GREATER_EQUAL
+            } else {
                 op = BinaryExpressionNode.Operator.GREATER_EQUAL;
                 opToken = ctx.GREATER_EQUAL(i - 1).getSymbol();
             }
@@ -563,7 +532,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             if (ctx.PLUS(i - 1) != null) {
                 op = BinaryExpressionNode.Operator.PLUS;
                 opToken = ctx.PLUS(i - 1).getSymbol();
-            } else { // MINUS
+            } else {
                 op = BinaryExpressionNode.Operator.MINUS;
                 opToken = ctx.MINUS(i - 1).getSymbol();
             }
@@ -588,7 +557,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             } else if (ctx.DIVIDE(i - 1) != null) {
                 op = BinaryExpressionNode.Operator.DIVIDE;
                 opToken = ctx.DIVIDE(i - 1).getSymbol();
-            } else { // MODULO
+            } else {
                 op = BinaryExpressionNode.Operator.MODULO;
                 opToken = ctx.MODULO(i - 1).getSymbol();
             }
@@ -611,7 +580,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.MINUS() != null) {
             op = UnaryExpressionNode.Operator.MINUS;
             opToken = ctx.MINUS().getSymbol();
-        } else { // NOT
+        } else {
             op = UnaryExpressionNode.Operator.NOT;
             opToken = ctx.NOT().getSymbol();
         }
@@ -660,7 +629,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             }
             bracketCount++;
         }
-        return -1; // Should not happen
+        return -1;
     }
 
     // Helper to find the index of the argument_list corresponding to a specific '('
@@ -672,7 +641,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             }
             parenCount++;
         }
-        return -1; // Should not happen
+        return -1;
     }
 
 
@@ -690,7 +659,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.THIS() != null) {
             return new ThisReferenceNode(getLine(ctx.THIS().getSymbol()), getColumn(ctx.THIS().getSymbol()));
         }
-        // Should not happen
         return null;
     }
 
@@ -709,7 +677,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         List<ExpressionNode> arguments = ctx.expression().stream()
                 .map(this::visitExpression)
                 .map(ExpressionNode.class::cast)
-                .collect(Collectors.toList());
+                .toList();
         return new ArgumentListNode(arguments, getLine(ctx), getColumn(ctx));
     }
 
@@ -728,7 +696,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             List<ExpressionNode> dimensionSizes = ctx.expression().stream()
                     .map(this::visitExpression)
                     .map(ExpressionNode.class::cast)
-                    .collect(Collectors.toList());
+                    .toList();
             // Note: The grammar implies elementType is just the base type.
             // The full array type (e.g., int[][]) is implicitly defined by the dimensions.
             return new ArrayCreationNode(type, dimensionSizes, line, col);
@@ -778,7 +746,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             // Representing null might require a specific NullLiteralNode or handling in type checking
             return new NullLiteralNode(getLine(ctx), getColumn(ctx));
         }
-        // Should not happen
         return null;
     }
 }
