@@ -8,11 +8,11 @@ public class TryCatchStatementNode extends StatementNode {
 
     private final List<StatementNode> tryBody;
     private final List<CatchClauseNode> catchClauses;
-    private final FinnallyClauseNode finallyClause;
+    private final FinallyClauseNode finallyClause;
 
     public TryCatchStatementNode(List<StatementNode> tryBody,
                                   List<CatchClauseNode> catchClauses,
-                                  FinnallyClauseNode finallyClause,
+                                  FinallyClauseNode finallyClause,
                                   int lineNumber,
                                   int columnNumber) {
         super(lineNumber, columnNumber);
@@ -29,7 +29,7 @@ public class TryCatchStatementNode extends StatementNode {
         return catchClauses;
     }
 
-    public FinnallyClauseNode getFinallyClause() {
+    public FinallyClauseNode getFinallyClause() {
         return finallyClause;
     }
 

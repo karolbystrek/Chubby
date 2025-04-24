@@ -16,12 +16,8 @@ class_definition
     : CLASS
     visibility_modifier
     IDENTIFIER
-    class_body
+    class_member*
     ENDCLASS
-    ;
-
-class_body
-    : class_member*
     ;
 
 class_member
@@ -35,12 +31,8 @@ constructor_definition
     visibility_modifier?
     IDENTIFIER
     LEFT_PAREN parameter_list? RIGHT_PAREN
-    constructor_body
+    statement*
     ENDCONSTRUCTOR
-    ;
-
-constructor_body
-    : statement*
     ;
 
 variable_definition
@@ -54,7 +46,7 @@ function_definition
     IDENTIFIER
     LEFT_PAREN parameter_list? RIGHT_PAREN
     COLON return_type
-    function_body
+    statement*
     ENDFUNCTION
     ;
 
@@ -79,10 +71,6 @@ type_specifier
 return_type
     : type_specifier (LEFT_SQUARE RIGHT_SQUARE )*
     | VOID
-    ;
-
-function_body
-    : statement*
     ;
 
 statement

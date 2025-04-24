@@ -16,8 +16,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         String className = ctx.IDENTIFIER().getText();
 
         List<AstNode> members = new ArrayList<>();
-        if (ctx.class_body() != null && ctx.class_body().class_member() != null) {
-            for (ChubbyParser.Class_memberContext memberCtx : ctx.class_body().class_member()) {
+        if (ctx != null && ctx.class_member() != null) {
+            for (ChubbyParser.Class_memberContext memberCtx : ctx.class_member()) {
                 members.add(visit(memberCtx));
             }
         }
@@ -47,8 +47,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         TypeNode returnType = (TypeNode) visit(ctx.return_type());
 
         List<AstNode> body = new ArrayList<>();
-        if (ctx.function_body() != null && ctx.function_body().statement() != null) {
-            for (ChubbyParser.StatementContext stmtCtx : ctx.function_body().statement()) {
+        if (ctx != null && ctx.statement() != null) {
+            for (ChubbyParser.StatementContext stmtCtx : ctx.statement()) {
                 AstNode visitedStmt = visit(stmtCtx);
                 if (visitedStmt != null) {
                     body.add(visitedStmt);
@@ -75,8 +75,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         }
 
         List<AstNode> body = new ArrayList<>();
-        if (ctx.constructor_body() != null && ctx.constructor_body().statement() != null) {
-            for (ChubbyParser.StatementContext stmtCtx : ctx.constructor_body().statement()) {
+        if (ctx != null && ctx.statement() != null) {
+            for (ChubbyParser.StatementContext stmtCtx : ctx.statement()) {
                 AstNode visitedStmt = visit(stmtCtx);
                 if (visitedStmt != null) {
                     body.add(visitedStmt);

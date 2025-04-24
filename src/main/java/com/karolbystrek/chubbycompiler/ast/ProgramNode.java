@@ -28,12 +28,11 @@ public class ProgramNode extends AstNode {
 
     @Override
     public String toString() {
-        String statementsStr = statements.isEmpty() ? "" :
-                statements.stream()
-                        .map(Object::toString)
-                        .collect(Collectors.joining("\n  ", "\n  ", "\n"));
-        return String.format("ProgramNode[@%s, statements=[%s]]",
-                getLocation(), statementsStr);
+        return "ProgramNode{" +
+                "statements=" + statements.stream()
+                .map(StatementNode::toString)
+                .collect(Collectors.joining(", ")) +
+                '}';
     }
 
     @Override
