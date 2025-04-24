@@ -5,11 +5,7 @@ program
     ;
 
 import_statement
-    : IMPORT qualified_identifier SEMICOLON
-    ;
-
-qualified_identifier
-    : IDENTIFIER ( DOT IDENTIFIER )*
+    : IMPORT IDENTIFIER SEMICOLON
     ;
 
 class_definition
@@ -65,7 +61,7 @@ parameter
     ;
 
 type_specifier
-    : ( BYTE | BOOL | INT | FLOAT | DOUBLE | CHAR | STRING | LONG | qualified_identifier )
+    : ( BYTE | BOOL | INT | FLOAT | DOUBLE | CHAR | STRING | LONG | IDENTIFIER )
     ;
 
 return_type
