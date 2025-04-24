@@ -1,29 +1,30 @@
 package com.karolbystrek.chubbycompiler.ast.statement.block;
 
-import java.util.List;
-
 import com.karolbystrek.chubbycompiler.ast.expression.ExpressionNode;
+import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
 import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
+
+import java.util.Objects;
 
 public class WhileStatementNode extends StatementNode {
 
     private final ExpressionNode condition;
-    private final List<StatementNode> body;
+    private final BlockNode body;
 
     public WhileStatementNode(ExpressionNode condition,
-                              List<StatementNode> body,
+                              BlockNode body,
                               int lineNumber,
                               int columnNumber) {
         super(lineNumber, columnNumber);
-        this.condition = condition;
-        this.body = body;
+        this.condition = Objects.requireNonNull(condition, "While condition cannot be null");
+        this.body = Objects.requireNonNull(body, "While body cannot be null");
     }
 
     public ExpressionNode getCondition() {
         return condition;
     }
 
-    public List<StatementNode> getBody() {
+    public BlockNode getBody() {
         return body;
     }
 
@@ -32,6 +33,21 @@ public class WhileStatementNode extends StatementNode {
         return "WhileStatementNode{" +
                 "condition=" + condition +
                 ", body=" + body +
+                ", line=" + getLineNumber() +
+                ", col=" + getColumnNumber() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WhileStatementNode that = (WhileStatementNode) o;
+        return Objects.equals(condition, that.condition) && Objects.equals(body, that.body);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(condition, body);
     }
 }

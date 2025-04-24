@@ -1,16 +1,20 @@
 package com.karolbystrek.chubbycompiler.ast.expression;
 
+import com.karolbystrek.chubbycompiler.ast.statement.simple.LValueNode;
+
 import java.util.Objects;
 
-
-public class ArrayAccessNode extends ExpressionNode {
+/**
+ * Represents accessing an element of an array (e.g., arr[index]).
+ * Functions as an LValue.
+ */
+public class ArrayAccessNode extends LValueNode {
 
     private final ExpressionNode arrayExpression;
     private final ExpressionNode indexExpression;
 
-
-    public ArrayAccessNode(ExpressionNode arrayExpression, ExpressionNode indexExpression, int bracketLine, int bracketColumn) {
-        super(bracketLine, bracketColumn);
+    public ArrayAccessNode(ExpressionNode arrayExpression, ExpressionNode indexExpression, int lineNumber, int columnNumber) {
+        super(lineNumber, columnNumber);
         this.arrayExpression = Objects.requireNonNull(arrayExpression, "Array expression cannot be null");
         this.indexExpression = Objects.requireNonNull(indexExpression, "Index expression cannot be null");
     }
@@ -25,8 +29,12 @@ public class ArrayAccessNode extends ExpressionNode {
 
     @Override
     public String toString() {
-        return String.format("ArrayAccess[array=%s, index=%s @%d:%d]",
-                arrayExpression, indexExpression, getLineNumber(), getColumnNumber());
+        return "ArrayAccessNode{" +
+                "array=" + arrayExpression +
+                ", index=" + indexExpression +
+                ", line=" + getLineNumber() +
+                ", col=" + getColumnNumber() +
+                '}';
     }
 
     @Override
@@ -34,7 +42,7 @@ public class ArrayAccessNode extends ExpressionNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArrayAccessNode that = (ArrayAccessNode) o;
-        return arrayExpression.equals(that.arrayExpression) && indexExpression.equals(that.indexExpression);
+        return Objects.equals(arrayExpression, that.arrayExpression) && Objects.equals(indexExpression, that.indexExpression);
     }
 
     @Override

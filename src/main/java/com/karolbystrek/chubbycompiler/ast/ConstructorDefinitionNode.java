@@ -1,25 +1,28 @@
 package com.karolbystrek.chubbycompiler.ast;
 
+import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
+
 import java.util.List;
+import java.util.Collections;
 
 public class ConstructorDefinitionNode extends ClassMemberNode {
 
     private final Visibility visibility;
     private final String name;
     private final List<ParameterNode> parameters;
-    private final List<AstNode> body;
+    private final List<StatementNode> body;
 
     public ConstructorDefinitionNode(Visibility visibility,
                                         String name,
                                         List<ParameterNode> parameters,
-                                        List<AstNode> body,
+                                        List<StatementNode> body,
                                         int lineNumber,
                                         int columnNumber) {
         super(lineNumber, columnNumber);
         this.visibility = (visibility != null) ? visibility : Visibility.PUBLIC;
         this.name = name;
-        this.parameters = parameters;
-        this.body = body;
+        this.parameters = parameters == null ? Collections.emptyList() : Collections.unmodifiableList(parameters);
+        this.body = body == null ? Collections.emptyList() : Collections.unmodifiableList(body);
     }
 
     @Override
@@ -36,7 +39,7 @@ public class ConstructorDefinitionNode extends ClassMemberNode {
         return parameters;
     }
 
-    public List<AstNode> getBody() {
+    public List<StatementNode> getBody() {
         return body;
     }
 

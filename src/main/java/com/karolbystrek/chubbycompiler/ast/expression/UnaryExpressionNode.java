@@ -2,21 +2,22 @@ package com.karolbystrek.chubbycompiler.ast.expression;
 
 import java.util.Objects;
 
-
-// np zmaian znaku lub zaprzecznie
 public class UnaryExpressionNode extends ExpressionNode {
 
-    private final String operator;
+    public enum Operator {
+        PLUS, MINUS, NOT
+    }
+
+    private final Operator operator;
     private final ExpressionNode operand;
 
-
-    public UnaryExpressionNode(String operator, ExpressionNode operand, int opLine, int opColumn) {
-        super(opLine, opColumn);
+    public UnaryExpressionNode(Operator operator, ExpressionNode operand, int lineNumber, int columnNumber) {
+        super(lineNumber, columnNumber);
         this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
         this.operand = Objects.requireNonNull(operand, "Operand cannot be null");
     }
 
-    public String getOperator() {
+    public Operator getOperator() {
         return operator;
     }
 
@@ -24,10 +25,14 @@ public class UnaryExpressionNode extends ExpressionNode {
         return operand;
     }
 
-    @Override
+     @Override
     public String toString() {
-        return String.format("UnaryExpr[%s %s @%d:%d]",
-                operator, operand, getLineNumber(), getColumnNumber());
+        return "UnaryExpressionNode{" +
+                "op=" + operator +
+                ", operand=" + operand +
+                ", line=" + getLineNumber() +
+                ", col=" + getColumnNumber() +
+                '}';
     }
 
     @Override
@@ -35,7 +40,7 @@ public class UnaryExpressionNode extends ExpressionNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UnaryExpressionNode that = (UnaryExpressionNode) o;
-        return Objects.equals(operator, that.operator) && Objects.equals(operand, that.operand);
+        return operator == that.operator && Objects.equals(operand, that.operand);
     }
 
     @Override

@@ -1,26 +1,14 @@
 package com.karolbystrek.chubbycompiler.ast.statement.simple;
 
-import com.karolbystrek.chubbycompiler.ast.AstNode;
+import com.karolbystrek.chubbycompiler.ast.expression.ExpressionNode;
 
-public class LValueNode extends AstNode {
+/**
+ * Represents an expression that can appear on the left-hand side of an assignment.
+ * Examples include variables, array elements, object fields.
+ */
+public abstract class LValueNode extends ExpressionNode {
 
-    private final String name;
-
-    public LValueNode(String name, int lineNumber, int columnNumber) {
+    public LValueNode(int lineNumber, int columnNumber) {
         super(lineNumber, columnNumber);
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return "LValueNode{" +
-                "name='" + name + '\'' +
-                ", lineNumber=" + super.getLineNumber() +
-                ", columnNumber=" + super.getColumnNumber() +
-                '}';
     }
 }

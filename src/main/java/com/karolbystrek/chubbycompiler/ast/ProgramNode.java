@@ -1,50 +1,55 @@
 package com.karolbystrek.chubbycompiler.ast;
 
-import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 public class ProgramNode extends AstNode {
 
+    private final List<ImportStatementNode> imports;
+    private final List<ClassDefinitionNode> classDefinitions;
 
-    private final List<StatementNode> statements;
 
-
-    public ProgramNode(List<StatementNode> statements, int lineNumber, int columnNumber) {
+    public ProgramNode(List<ImportStatementNode> imports, List<ClassDefinitionNode> classDefinitions, int lineNumber, int columnNumber) {
         super(lineNumber, columnNumber);
-        this.statements = Collections.unmodifiableList(
-                Objects.requireNonNull(statements, "Statements list cannot be null")
+        this.imports = Collections.unmodifiableList(
+                Objects.requireNonNull(imports, "Imports list cannot be null")
+        );
+        this.classDefinitions = Collections.unmodifiableList(
+                Objects.requireNonNull(classDefinitions, "Class definitions list cannot be null")
         );
     }
 
+    public List<ImportStatementNode> getImports() {
+        return imports;
+    }
 
-    public List<StatementNode> getStatements() {
-        return statements;
+    public List<ClassDefinitionNode> getClassDefinitions() {
+        return classDefinitions;
     }
 
     @Override
     public String toString() {
         return "ProgramNode{" +
-                "statements=" + statements.stream()
-                .map(StatementNode::toString)
-                .collect(Collectors.joining(", ")) +
+                "imports=" + imports +
+                ", classDefinitions=" + classDefinitions +
+                ", lineNumber=" + getLineNumber() +
+                ", columnNumber=" + getColumnNumber() +
                 '}';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!super.equals(o)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         ProgramNode that = (ProgramNode) o;
-        return Objects.equals(statements, that.statements);
+        return Objects.equals(imports, that.imports) &&
+               Objects.equals(classDefinitions, that.classDefinitions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), statements);
+        return Objects.hash(imports, classDefinitions);
     }
 }

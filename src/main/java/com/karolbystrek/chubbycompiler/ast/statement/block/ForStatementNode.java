@@ -1,6 +1,7 @@
 package com.karolbystrek.chubbycompiler.ast.statement.block;
 
 import com.karolbystrek.chubbycompiler.ast.expression.ExpressionNode;
+import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
 import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
 
 public class ForStatementNode extends StatementNode {
@@ -8,15 +9,16 @@ public class ForStatementNode extends StatementNode {
     private final StatementNode initialization;
     private final ExpressionNode condition;
     private final StatementNode update;
-    private final StatementNode body;
+    private final BlockNode body;
 
     public ForStatementNode(StatementNode initialization,
                             ExpressionNode condition,
                             StatementNode update,
-                            StatementNode body,
+                            BlockNode body,
                             int lineNumber,
                             int columnNumber) {
         super(lineNumber, columnNumber);
+        // Initialization, condition, and update can be null according to grammar
         this.initialization = initialization;
         this.condition = condition;
         this.update = update;

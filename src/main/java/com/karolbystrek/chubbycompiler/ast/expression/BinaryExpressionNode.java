@@ -2,17 +2,22 @@ package com.karolbystrek.chubbycompiler.ast.expression;
 
 import java.util.Objects;
 
-
 public class BinaryExpressionNode extends ExpressionNode {
 
+    public enum Operator {
+        OR, AND,
+        EQUAL, NOT_EQUAL,
+        LESS, GREATER, LESS_EQUAL, GREATER_EQUAL,
+        PLUS, MINUS,
+        MULTIPLY, DIVIDE, MODULO
+    }
+
     private final ExpressionNode leftOperand;
-    private final String operator;
+    private final Operator operator;
     private final ExpressionNode rightOperand;
 
-
-    public BinaryExpressionNode(ExpressionNode leftOperand, String operator, ExpressionNode rightOperand,
-                                int opLine, int opColumn) {
-        super(opLine, opColumn);
+    public BinaryExpressionNode(ExpressionNode leftOperand, Operator operator, ExpressionNode rightOperand, int lineNumber, int columnNumber) {
+        super(lineNumber, columnNumber);
         this.leftOperand = Objects.requireNonNull(leftOperand, "Left operand cannot be null");
         this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
         this.rightOperand = Objects.requireNonNull(rightOperand, "Right operand cannot be null");
@@ -22,7 +27,7 @@ public class BinaryExpressionNode extends ExpressionNode {
         return leftOperand;
     }
 
-    public String getOperator() {
+    public Operator getOperator() {
         return operator;
     }
 
@@ -32,8 +37,13 @@ public class BinaryExpressionNode extends ExpressionNode {
 
     @Override
     public String toString() {
-        return String.format("BinaryExpr[%s %s %s @%d:%d]",
-                leftOperand, operator, rightOperand, getLineNumber(), getColumnNumber());
+        return "BinaryExpressionNode{" +
+                "left=" + leftOperand +
+                ", op=" + operator +
+                ", right=" + rightOperand +
+                ", line=" + getLineNumber() +
+                ", col=" + getColumnNumber() +
+                '}';
     }
 
     @Override
@@ -41,9 +51,7 @@ public class BinaryExpressionNode extends ExpressionNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BinaryExpressionNode that = (BinaryExpressionNode) o;
-        return Objects.equals(leftOperand, that.leftOperand) &&
-                Objects.equals(operator, that.operator) &&
-                Objects.equals(rightOperand, that.rightOperand);
+        return Objects.equals(leftOperand, that.leftOperand) && operator == that.operator && Objects.equals(rightOperand, that.rightOperand);
     }
 
     @Override

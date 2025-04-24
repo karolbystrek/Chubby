@@ -1,30 +1,30 @@
 package com.karolbystrek.chubbycompiler.ast.statement.block;
 
-import java.util.List;
+import java.util.Objects;
 
 import com.karolbystrek.chubbycompiler.ast.AstNode;
 import com.karolbystrek.chubbycompiler.ast.ParameterNode;
-import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
+import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
 
 public class CatchClauseNode extends AstNode {
 
     private final ParameterNode exceptionParameter;
-    private final List<StatementNode> body;
+    private final BlockNode body;
 
     public CatchClauseNode(ParameterNode exceptionParameter,
-                           List<StatementNode> body,
+                           BlockNode body,
                            int lineNumber,
                            int columnNumber) {
         super(lineNumber, columnNumber);
-        this.exceptionParameter = exceptionParameter;
-        this.body = body;
+        this.exceptionParameter = Objects.requireNonNull(exceptionParameter, "Catch exception parameter cannot be null");
+        this.body = Objects.requireNonNull(body, "Catch body cannot be null");
     }
 
     public ParameterNode getExceptionParameter() {
         return exceptionParameter;
     }
 
-    public List<StatementNode> getBody() {
+    public BlockNode getBody() {
         return body;
     }
 
@@ -33,6 +33,21 @@ public class CatchClauseNode extends AstNode {
         return "CatchClauseNode{" +
                 "exceptionParameter=" + exceptionParameter +
                 ", body=" + body +
+                ", line=" + getLineNumber() +
+                ", col=" + getColumnNumber() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CatchClauseNode that = (CatchClauseNode) o;
+        return Objects.equals(exceptionParameter, that.exceptionParameter) && Objects.equals(body, that.body);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(exceptionParameter, body);
     }
 }

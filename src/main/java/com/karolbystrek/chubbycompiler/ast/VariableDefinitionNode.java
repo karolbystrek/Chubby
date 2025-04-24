@@ -59,7 +59,7 @@ public class VariableDefinitionNode extends ClassMemberNode {
                 ", type='" + type + '\'' +
                 ", name='" + name + '\'' +
                 ", isStatic=" + isStatic +
-                ", isFinal=" + isConst +
+                ", isConst=" + isConst +
                 ", initializer=" + initializer +
                 ", lineNumber=" + super.getLineNumber() +
                 ", columnNumber=" + super.getColumnNumber() +

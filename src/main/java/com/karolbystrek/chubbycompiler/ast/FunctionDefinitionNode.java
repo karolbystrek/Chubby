@@ -1,6 +1,9 @@
 package com.karolbystrek.chubbycompiler.ast;
 
+import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
+
 import java.util.List;
+import java.util.Collections;
 
 public class FunctionDefinitionNode extends ClassMemberNode {
 
@@ -9,23 +12,23 @@ public class FunctionDefinitionNode extends ClassMemberNode {
     private final String name;
     private final List<ParameterNode> parameters;
     private final TypeNode returnType;
-    private final List<AstNode> body;
+    private final List<StatementNode> body;
 
     public FunctionDefinitionNode(Visibility visibility,
                                   boolean isStatic,
                                   String name,
                                   List<ParameterNode> parameters,
                                   TypeNode returnType,
-                                  List<AstNode> body,
+                                  List<StatementNode> body,
                                   int lineNumber,
                                   int columnNumber) {
         super(lineNumber, columnNumber);
         this.visibility = visibility;
         this.isStatic = isStatic;
         this.name = name;
-        this.parameters = parameters;
+        this.parameters = parameters == null ? Collections.emptyList() : Collections.unmodifiableList(parameters);
         this.returnType = returnType;
-        this.body = body;
+        this.body = body == null ? Collections.emptyList() : Collections.unmodifiableList(body);
     }
 
     @Override
@@ -50,7 +53,7 @@ public class FunctionDefinitionNode extends ClassMemberNode {
         return returnType;
     }
 
-    public List<AstNode> getBody() {
+    public List<StatementNode> getBody() {
         return body;
     }
 

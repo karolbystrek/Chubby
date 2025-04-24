@@ -6,11 +6,11 @@ import java.util.List;
 public class ClassDefinitionNode extends AstNode {
     private final Visibility visibility;
     private final String name;
-    private final List<AstNode> members;
+    private final List<ClassMemberNode> members;
 
     public ClassDefinitionNode(Visibility visibility,
                                String name,
-                               List<AstNode> members,
+                               List<ClassMemberNode> members,
                                int lineNumber,
                                int columnNumber) {
         super(lineNumber, columnNumber);
@@ -29,7 +29,7 @@ public class ClassDefinitionNode extends AstNode {
         return name;
     }
 
-    public List<AstNode> getMembers() {
+    public List<ClassMemberNode> getMembers() {
         return members;
     }
 
