@@ -163,7 +163,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             visibility = Visibility.PROTECTED;
             token = ctx.PROTECTED().getSymbol();
         } else {
-            visibility = Visibility.PUBLIC;
+            visibility = Visibility.PRIVATE;
             token = ctx.getStart();
         }
         return new VisibilityNode(visibility, getLine(token), getColumn(token));
@@ -591,24 +591,18 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
     public AstNode visitPostfixExpression(ChubbyParser.PostfixExpressionContext ctx) {
         ExpressionNode baseExpr = (ExpressionNode) visitPrimaryExpression(ctx.primaryExpression());
 
-        // Process postfix operations iteratively
         for (int i = 0; i < ctx.getChildCount(); i++) {
             ParseTree child = ctx.getChild(i);
             if (child instanceof TerminalNode) {
                 TerminalNode node = (TerminalNode) child;
                 if (node.getSymbol().getType() == ChubbyParser.DOT) {
-                    // Member access: baseExpr.IDENTIFIER
-                    String memberName = ctx.IDENTIFIER(ctx.DOT().indexOf(node)).getText(); // Find corresponding IDENTIFIER
+                    String memberName = ctx.IDENTIFIER(ctx.DOT().indexOf(node)).getText();
                     baseExpr = new MemberAccessNode(baseExpr, memberName, getLine(node.getSymbol()), getColumn(node.getSymbol()));
                 } else if (node.getSymbol().getType() == ChubbyParser.LEFT_SQUARE) {
-                    // Array access: baseExpr[expression]
-                    // Find the corresponding expression context
                     int exprIndex = findExpressionIndexForBracket(ctx, node);
                     ExpressionNode indexExpr = (ExpressionNode) visitExpression(ctx.expression(exprIndex));
                     baseExpr = new ArrayAccessNode(baseExpr, indexExpr, getLine(node.getSymbol()), getColumn(node.getSymbol()));
                 } else if (node.getSymbol().getType() == ChubbyParser.LEFT_PAREN) {
-                    // Function call: baseExpr(argument_list?)
-                    // Find the corresponding argument_list context
                     int argListIndex = findArgumentListIndexForParen(ctx, node);
                     List<ExpressionNode> arguments = (argListIndex != -1 && ctx.argument_list(argListIndex) != null) ?
                             ((ArgumentListNode) visitArgument_list(ctx.argument_list(argListIndex))).getArguments() :
@@ -620,7 +614,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         return baseExpr;
     }
 
-    // Helper to find the index of the expression corresponding to a specific '['
     private int findExpressionIndexForBracket(ChubbyParser.PostfixExpressionContext ctx, TerminalNode bracketNode) {
         int bracketCount = 0;
         for(TerminalNode node : ctx.LEFT_SQUARE()) {
@@ -632,7 +625,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         return -1;
     }
 
-    // Helper to find the index of the argument_list corresponding to a specific '('
     private int findArgumentListIndexForParen(ChubbyParser.PostfixExpressionContext ctx, TerminalNode parenNode) {
         int parenCount = 0;
         for(TerminalNode node : ctx.LEFT_PAREN()) {
@@ -662,7 +654,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         return null;
     }
 
-    // Helper Node for Argument List processing
     private static class ArgumentListNode extends AstNode {
         private final List<ExpressionNode> arguments;
         ArgumentListNode(List<ExpressionNode> arguments, int line, int col) {
@@ -687,18 +678,16 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         int line = getLine(ctx.NEW().getSymbol());
         int col = getColumn(ctx.NEW().getSymbol());
 
-        if (ctx.LEFT_PAREN() != null) { // Object creation: new Type(args?)
+        if (ctx.LEFT_PAREN() != null) {
             List<ExpressionNode> arguments = ctx.argument_list() != null ?
                     ((ArgumentListNode) visitArgument_list(ctx.argument_list())).getArguments() :
                     Collections.emptyList();
             return new ObjectCreationNode(type, arguments, line, col);
-        } else { // Array creation: new Type[size]+
+        } else {
             List<ExpressionNode> dimensionSizes = ctx.expression().stream()
                     .map(this::visitExpression)
                     .map(ExpressionNode.class::cast)
                     .toList();
-            // Note: The grammar implies elementType is just the base type.
-            // The full array type (e.g., int[][]) is implicitly defined by the dimensions.
             return new ArrayCreationNode(type, dimensionSizes, line, col);
         }
     }
@@ -708,34 +697,27 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         if (ctx.INTEGER_LITERAL() != null) {
             return new IntegerLiteralNode(Integer.parseInt(ctx.INTEGER_LITERAL().getText()), getLine(ctx), getColumn(ctx));
         } else if (ctx.FLOAT_LITERAL() != null) {
-            // Remove 'f' or 'F' suffix before parsing
             String floatText = ctx.FLOAT_LITERAL().getText().toUpperCase().replace("F", "");
             return new FloatLiteralNode(Float.parseFloat(floatText), getLine(ctx), getColumn(ctx));
         } else if (ctx.DOUBLE_LITERAL() != null) {
-            // Remove 'd' or 'D' suffix if present
             String doubleText = ctx.DOUBLE_LITERAL().getText().toUpperCase().replace("D", "");
             return new DoubleLiteralNode(Double.parseDouble(doubleText), getLine(ctx), getColumn(ctx));
         } else if (ctx.CHAR_LITERAL() != null) {
-            // Remove quotes and handle escape sequences if necessary (basic handling here)
             String charText = ctx.CHAR_LITERAL().getText();
-            char value = charText.substring(1, charText.length() - 1).charAt(0); // Basic, assumes no complex escapes
-             if (charText.length() > 3 && charText.charAt(1) == '\\') { // Handle simple escapes like \n, \t, \\, \'
+            char value = charText.substring(1, charText.length() - 1).charAt(0);
+             if (charText.length() > 3 && charText.charAt(1) == '\\') {
                 switch (charText.charAt(2)) {
                     case 'n': value = '\n'; break;
                     case 't': value = '\t'; break;
                     case '\\': value = '\\'; break;
                     case '\'': value = '\''; break;
-                    // Add other escapes if needed
                 }
             }
             return new CharLiteralNode(value, getLine(ctx), getColumn(ctx));
         } else if (ctx.STRING_LITERAL() != null) {
-            // Remove quotes and handle escape sequences (basic handling here)
             String stringText = ctx.STRING_LITERAL().getText();
             String value = stringText.substring(1, stringText.length() - 1);
-            // Basic escape handling (replace \\ with \ and \" with ")
             value = value.replace("\\\\", "\\").replace("\\\"", "\"");
-            // Add other escapes if needed (\n, \t etc.)
             value = value.replace("\\n", "\n").replace("\\t", "\t");
             return new StringLiteralNode(value, getLine(ctx), getColumn(ctx));
         } else if (ctx.TRUE() != null) {
@@ -743,7 +725,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.FALSE() != null) {
             return new BooleanLiteralNode(false, getLine(ctx), getColumn(ctx));
         } else if (ctx.NULL() != null) {
-            // Representing null might require a specific NullLiteralNode or handling in type checking
             return new NullLiteralNode(getLine(ctx), getColumn(ctx));
         }
         return null;

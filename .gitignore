@@ -71,3 +71,7 @@ Thumbs.db
 *~
 *.bak
 *.tmp
+
+output
+*.class
+simple.cbb
