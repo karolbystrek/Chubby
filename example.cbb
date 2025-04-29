@@ -45,7 +45,7 @@ class public ExampleApp
             endif
         endif
 
-        for (int i = 0; i < 3; i += 1) do
+        for i in 0 .. 10 by 1 do
             while i < 2 do
                 print("Nested loop: " + i);
                 break;
