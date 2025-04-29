@@ -2,24 +2,13 @@ package com.karolbystrek.chubbycompiler.parser;
 
 import com.karolbystrek.chubbycompiler.ChubbyBaseVisitor;
 import com.karolbystrek.chubbycompiler.ChubbyParser;
-import com.karolbystrek.chubbycompiler.ast.AstNode;
-import com.karolbystrek.chubbycompiler.ast.ClassDefinitionNode;
-import com.karolbystrek.chubbycompiler.ast.ClassMemberNode;
-import com.karolbystrek.chubbycompiler.ast.ConstructorDefinitionNode;
-import com.karolbystrek.chubbycompiler.ast.FunctionDefinitionNode;
-import com.karolbystrek.chubbycompiler.ast.ImportStatementNode;
-import com.karolbystrek.chubbycompiler.ast.ParameterNode;
-import com.karolbystrek.chubbycompiler.ast.ProgramNode;
-import com.karolbystrek.chubbycompiler.ast.TypeNode;
-import com.karolbystrek.chubbycompiler.ast.VariableDefinitionNode;
-import com.karolbystrek.chubbycompiler.ast.Visibility;
-import com.karolbystrek.chubbycompiler.ast.VisibilityNode;
+import com.karolbystrek.chubbycompiler.ast.*;
 import com.karolbystrek.chubbycompiler.ast.expression.*;
 import com.karolbystrek.chubbycompiler.ast.expression.literal.*;
-import com.karolbystrek.chubbycompiler.ast.statement.*;
+import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
+import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
 import com.karolbystrek.chubbycompiler.ast.statement.block.*;
 import com.karolbystrek.chubbycompiler.ast.statement.simple.*;
-import com.karolbystrek.chubbycompiler.ast.statement.simple.AssignmentOperatorNode;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -144,7 +133,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         List<StatementNode> body = ctx.statement().stream()
                 .map(this::visitStatement)
                 .map(StatementNode.class::cast)
-                .toList();;
+                .toList();
 
         return new FunctionDefinitionNode(visibility, isStatic, name, parameters, returnType, body, getLine(ctx), getColumn(ctx));
     }
@@ -173,7 +162,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
     public AstNode visitParameter(ChubbyParser.ParameterContext ctx) {
         TypeNode type = (TypeNode) visitType_specifier(ctx.type_specifier());
         int arrayDimensions = ctx.LEFT_SQUARE().size();
-         if (arrayDimensions > 0) {
+        if (arrayDimensions > 0) {
             type = new TypeNode(type.getBaseTypeName(), arrayDimensions, type.getLineNumber(), type.getColumnNumber());
         }
         String name = ctx.IDENTIFIER().getText();
@@ -221,7 +210,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitSimple_statement(ChubbyParser.Simple_statementContext ctx) {
-        if (ctx.local_variable_declaration() != null) return visitLocal_variable_declaration(ctx.local_variable_declaration());
+        if (ctx.local_variable_declaration() != null)
+            return visitLocal_variable_declaration(ctx.local_variable_declaration());
         if (ctx.assignment_statement() != null) return visitAssignment_statement(ctx.assignment_statement());
         if (ctx.return_statement() != null) return visitReturn_statement(ctx.return_statement());
         if (ctx.break_statement() != null) return visitBreak_statement(ctx.break_statement());
@@ -331,8 +321,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             ParameterNode exceptionParam = (ParameterNode) visitParameter(ctx.parameter(i));
             int startCatchBodyIndex = ctx.RIGHT_PAREN(i).getSymbol().getTokenIndex() + 1;
             int endCatchBodyIndex = (i + 1 < ctx.CATCH().size()) ?
-                                    ctx.CATCH(i + 1).getSymbol().getTokenIndex() :
-                                    (ctx.FINALLY() != null ? ctx.FINALLY().getSymbol().getTokenIndex() : ctx.ENDTRY().getSymbol().getTokenIndex());
+                    ctx.CATCH(i + 1).getSymbol().getTokenIndex() :
+                    (ctx.FINALLY() != null ? ctx.FINALLY().getSymbol().getTokenIndex() : ctx.ENDTRY().getSymbol().getTokenIndex());
             BlockNode catchBody = createBlockNode(ctx.statement(), startCatchBodyIndex, endCatchBodyIndex);
             catchClauses.add(new CatchClauseNode(exceptionParam, catchBody, getLine(ctx.CATCH(i).getSymbol()), getColumn(ctx.CATCH(i).getSymbol())));
         }
@@ -354,8 +344,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
         int thenStartIndex = ctx.THEN(0).getSymbol().getTokenIndex() + 1;
         int thenEndIndex = ctx.ELSIF().isEmpty() ?
-                           (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex()) :
-                           ctx.ELSIF(0).getSymbol().getTokenIndex();
+                (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex()) :
+                ctx.ELSIF(0).getSymbol().getTokenIndex();
         BlockNode thenBranch = createBlockNode(ctx.statement(), thenStartIndex, thenEndIndex);
 
         List<IfStatementNode.ElsifBranch> elsifBranches = new ArrayList<>();
@@ -363,8 +353,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             ExpressionNode elsifCondition = (ExpressionNode) visitBoolean_expression(ctx.boolean_expression(i + 1));
             int elsifStartIndex = ctx.THEN(i + 1).getSymbol().getTokenIndex() + 1;
             int elsifEndIndex = (i + 1 < ctx.ELSIF().size()) ?
-                                ctx.ELSIF(i + 1).getSymbol().getTokenIndex() :
-                                (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex());
+                    ctx.ELSIF(i + 1).getSymbol().getTokenIndex() :
+                    (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex());
             BlockNode elsifBody = createBlockNode(ctx.statement(), elsifStartIndex, elsifEndIndex);
             elsifBranches.add(new IfStatementNode.ElsifBranch(elsifCondition, elsifBody));
         }
@@ -392,7 +382,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         return new ForStatementNode(initialization, condition, update, body, getLine(ctx), getColumn(ctx));
     }
 
-     @Override
+    @Override
     public AstNode visitFor_init(ChubbyParser.For_initContext ctx) {
         if (ctx.local_variable_declaration() != null) {
             return visitLocal_variable_declaration(ctx.local_variable_declaration());
@@ -428,8 +418,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
                 .map(this::visitStatement)
                 .map(StatementNode.class::cast)
                 .toList();
-        int line = blockStatements.isEmpty() ? 0 : blockStatements.get(0).getLineNumber();
-        int col = blockStatements.isEmpty() ? 0 : blockStatements.get(0).getColumnNumber();
+        int line = blockStatements.isEmpty() ? 0 : blockStatements.getFirst().getLineNumber();
+        int col = blockStatements.isEmpty() ? 0 : blockStatements.getFirst().getColumnNumber();
         return new BlockNode(blockStatements, line, col);
     }
 
@@ -593,8 +583,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
         for (int i = 0; i < ctx.getChildCount(); i++) {
             ParseTree child = ctx.getChild(i);
-            if (child instanceof TerminalNode) {
-                TerminalNode node = (TerminalNode) child;
+            if (child instanceof TerminalNode node) {
                 if (node.getSymbol().getType() == ChubbyParser.DOT) {
                     String memberName = ctx.IDENTIFIER(ctx.DOT().indexOf(node)).getText();
                     baseExpr = new MemberAccessNode(baseExpr, memberName, getLine(node.getSymbol()), getColumn(node.getSymbol()));
@@ -616,7 +605,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     private int findExpressionIndexForBracket(ChubbyParser.PostfixExpressionContext ctx, TerminalNode bracketNode) {
         int bracketCount = 0;
-        for(TerminalNode node : ctx.LEFT_SQUARE()) {
+        for (TerminalNode node : ctx.LEFT_SQUARE()) {
             if (node == bracketNode) {
                 return bracketCount;
             }
@@ -627,7 +616,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     private int findArgumentListIndexForParen(ChubbyParser.PostfixExpressionContext ctx, TerminalNode parenNode) {
         int parenCount = 0;
-        for(TerminalNode node : ctx.LEFT_PAREN()) {
+        for (TerminalNode node : ctx.LEFT_PAREN()) {
             if (node == parenNode) {
                 return parenCount;
             }
@@ -652,15 +641,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             return new ThisReferenceNode(getLine(ctx.THIS().getSymbol()), getColumn(ctx.THIS().getSymbol()));
         }
         return null;
-    }
-
-    private static class ArgumentListNode extends AstNode {
-        private final List<ExpressionNode> arguments;
-        ArgumentListNode(List<ExpressionNode> arguments, int line, int col) {
-            super(line, col);
-            this.arguments = arguments;
-        }
-        List<ExpressionNode> getArguments() { return arguments; }
     }
 
     @Override
@@ -705,13 +685,14 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.CHAR_LITERAL() != null) {
             String charText = ctx.CHAR_LITERAL().getText();
             char value = charText.substring(1, charText.length() - 1).charAt(0);
-             if (charText.length() > 3 && charText.charAt(1) == '\\') {
-                switch (charText.charAt(2)) {
-                    case 'n': value = '\n'; break;
-                    case 't': value = '\t'; break;
-                    case '\\': value = '\\'; break;
-                    case '\'': value = '\''; break;
-                }
+            if (charText.length() > 3 && charText.charAt(1) == '\\') {
+                value = switch (charText.charAt(2)) {
+                    case 'n' -> '\n';
+                    case 't' -> '\t';
+                    case '\\' -> '\\';
+                    case '\'' -> '\'';
+                    default -> value;
+                };
             }
             return new CharLiteralNode(value, getLine(ctx), getColumn(ctx));
         } else if (ctx.STRING_LITERAL() != null) {
@@ -728,5 +709,18 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
             return new NullLiteralNode(getLine(ctx), getColumn(ctx));
         }
         return null;
+    }
+
+    private static class ArgumentListNode extends AstNode {
+        private final List<ExpressionNode> arguments;
+
+        ArgumentListNode(List<ExpressionNode> arguments, int line, int col) {
+            super(line, col);
+            this.arguments = arguments;
+        }
+
+        List<ExpressionNode> getArguments() {
+            return arguments;
+        }
     }
 }
