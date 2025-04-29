@@ -371,36 +371,19 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitFor_statement(ChubbyParser.For_statementContext ctx) {
-        StatementNode initialization = ctx.for_init() != null ? (StatementNode) visitFor_init(ctx.for_init()) : null;
-        ExpressionNode condition = ctx.boolean_expression() != null ? (ExpressionNode) visitBoolean_expression(ctx.boolean_expression()) : null;
-        StatementNode update = ctx.for_update() != null ? (StatementNode) visitFor_update(ctx.for_update()) : null;
-
+        String identifierName = ctx.IDENTIFIER().getText();
+        IdentifierNode identifier = new IdentifierNode(identifierName, getLine(ctx.IDENTIFIER().getSymbol()), getColumn(ctx.IDENTIFIER().getSymbol()));
+        ExpressionNode startExpression = (ExpressionNode) visitExpression(ctx.expression(0));
+        ExpressionNode endExpression = (ExpressionNode) visitExpression(ctx.expression(1));
+        ExpressionNode stepExpression = null;
+        if (ctx.BY() != null) {
+            stepExpression = (ExpressionNode) visitExpression(ctx.expression(2));
+        }
         int bodyStartIndex = ctx.DO().getSymbol().getTokenIndex() + 1;
         int bodyEndIndex = ctx.ENDFOR().getSymbol().getTokenIndex();
         BlockNode body = createBlockNode(ctx.statement(), bodyStartIndex, bodyEndIndex);
 
-        return new ForStatementNode(initialization, condition, update, body, getLine(ctx), getColumn(ctx));
-    }
-
-    @Override
-    public AstNode visitFor_init(ChubbyParser.For_initContext ctx) {
-        if (ctx.local_variable_declaration() != null) {
-            return visitLocal_variable_declaration(ctx.local_variable_declaration());
-        } else if (ctx.assignment_statement() != null) {
-            return visitAssignment_statement(ctx.assignment_statement());
-        }
-        return null;
-    }
-
-    @Override
-    public AstNode visitFor_update(ChubbyParser.For_updateContext ctx) {
-        if (ctx.assignment_statement() != null) {
-            return visitAssignment_statement(ctx.assignment_statement());
-        } else if (ctx.expression() != null) {
-            ExpressionNode expr = (ExpressionNode) visitExpression(ctx.expression());
-            return new ExpressionStatementNode(expr, getLine(ctx), getColumn(ctx));
-        }
-        return null;
+        return new ForStatementNode(identifier, startExpression, endExpression, stepExpression, body, getLine(ctx), getColumn(ctx));
     }
 
     @Override

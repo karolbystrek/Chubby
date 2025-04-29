@@ -1,52 +1,60 @@
 package com.karolbystrek.chubbycompiler.ast.statement.block;
 
 import com.karolbystrek.chubbycompiler.ast.expression.ExpressionNode;
+import com.karolbystrek.chubbycompiler.ast.expression.IdentifierNode;
 import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
 import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
 
 public class ForStatementNode extends StatementNode {
 
-    private final StatementNode initialization;
-    private final ExpressionNode condition;
-    private final StatementNode update;
+    private final IdentifierNode identifier;
+    private final ExpressionNode startExpression;
+    private final ExpressionNode endExpression;
+    private final ExpressionNode stepExpression;
     private final BlockNode body;
 
-    public ForStatementNode(StatementNode initialization,
-                            ExpressionNode condition,
-                            StatementNode update,
+    public ForStatementNode(IdentifierNode identifier,
+                            ExpressionNode startExpression,
+                            ExpressionNode endExpression,
+                            ExpressionNode stepExpression,
                             BlockNode body,
                             int lineNumber,
                             int columnNumber) {
         super(lineNumber, columnNumber);
-        // Initialization, condition, and update can be null according to grammar
-        this.initialization = initialization;
-        this.condition = condition;
-        this.update = update;
+        this.identifier = identifier;
+        this.startExpression = startExpression;
+        this.endExpression = endExpression;
+        this.stepExpression = stepExpression;
         this.body = body;
     }
 
-    public StatementNode getInitialization() {
-        return initialization;
+    public IdentifierNode getIdentifier() {
+        return identifier;
     }
 
-    public ExpressionNode getCondition() {
-        return condition;
+    public ExpressionNode getStartExpression() {
+        return startExpression;
     }
 
-    public StatementNode getUpdate() {
-        return update;
+    public ExpressionNode getEndExpression() {
+        return endExpression;
     }
 
-    public StatementNode getBody() {
+    public ExpressionNode getStepExpression() {
+        return stepExpression;
+    }
+
+    public BlockNode getBody() {
         return body;
     }
 
     @Override
     public String toString() {
         return "ForStatementNode{" +
-                "initialization=" + initialization +
-                ", condition=" + condition +
-                ", update=" + update +
+                "identifier=" + identifier +
+                ", startExpression=" + startExpression +
+                ", endExpression=" + endExpression +
+                ", stepExpression=" + stepExpression +
                 ", body=" + body +
                 '}';
     }

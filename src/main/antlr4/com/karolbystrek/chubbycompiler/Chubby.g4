@@ -139,21 +139,9 @@ if_statement
     ;
 
 for_statement
-    : FOR
-    LEFT_PAREN for_init? SEMICOLON boolean_expression? SEMICOLON for_update? RIGHT_PAREN
-    DO
+    : FOR IDENTIFIER IN expression RANGE expression ( BY expression )? DO
     statement*
     ENDFOR
-    ;
-
-for_init
-    : local_variable_declaration
-    | assignment_statement
-    ;
-
-for_update
-    : assignment_statement
-    | expression
     ;
 
 while_statement
@@ -222,8 +210,8 @@ argument_list
     ;
 
 object_creation
-    : NEW type_specifier LEFT_PAREN argument_list? RIGHT_PAREN // Object: new MyClass(args)
-    | NEW type_specifier ( LEFT_SQUARE expression RIGHT_SQUARE )+ // Array: new int[size]
+    : NEW type_specifier LEFT_PAREN argument_list? RIGHT_PAREN
+    | NEW type_specifier ( LEFT_SQUARE expression RIGHT_SQUARE )+
     ;
 
 literal
@@ -243,6 +231,9 @@ ELSE: 'else';
 ENDIF: 'endif';
 DO: 'do';
 FOR: 'for';
+IN: 'in';
+RANGE: '..';
+BY: 'by';
 ENDFOR: 'endfor';
 WHILE: 'while';
 ENDWHILE: 'endwhile';
