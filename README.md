@@ -60,7 +60,6 @@ The full ANTLR4 grammar definition for Chubby can be found in the following file
 1. **Prerequisites:**
     * Java Development Kit (JDK) version 21 installed.
     * Maven installed.
-    * ANTLR4 Java Runtime library (if not managed by the build system).
 
 2. **Compiling the Translator:**
 
@@ -68,14 +67,34 @@ The full ANTLR4 grammar definition for Chubby can be found in the following file
    mvn clean package
    ```
 
+   This command compiles the source code and packages it into a JAR file located in the `target/` directory (e.g., `target/ChubbyCompiler.jar`).
+
 3. **Running the Compiler:**
 
+   To compile a Chubby source file (`.cbb`) into JVM bytecode (`.class` files), use the following command:
+
    ```bash
-   java -jar target/ChubbyCompiler.jar input_file.cbb
+   java -jar target/ChubbyCompiler.jar <input_file.cbb> [output_directory]
    ```
 
-   Where `input_file.cbb` is your Chubby source code file.
+   * `<input_file.cbb>`: Path to the Chubby source file you want to compile.
+   * `[output_directory]` (Optional): The directory where the generated `.class` files will be saved. If omitted, files are saved in the current directory (`.`).
 
 ## Usage Example
+
+Compile the `example.cbb` file and place the output `.class` files in the `output_classes` directory:
+
+```bash
+# First, ensure the compiler is built
+mvn clean package
+
+# Create the output directory if it doesn't exist
+mkdir output_classes
+
+# Run the compiler
+java -jar target/ChubbyCompiler.jar example.cbb output_classes
+```
+
+This will generate `.class` files corresponding to the classes defined in `example.cbb` inside the `output_classes` folder.
 
 Sample Input: **[example.cbb](example.cbb)**
