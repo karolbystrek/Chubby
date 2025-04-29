@@ -1,14 +1,16 @@
 package com.karolbystrek.chubbycompiler;
 
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTree;
-
 import com.karolbystrek.chubbycompiler.ast.AstNode;
 import com.karolbystrek.chubbycompiler.ast.ProgramNode;
 import com.karolbystrek.chubbycompiler.compiler.Compiler;
 import com.karolbystrek.chubbycompiler.exceptions.CompilationException;
 import com.karolbystrek.chubbycompiler.parser.AstBuilderVisitor;
 import com.karolbystrek.chubbycompiler.parser.DescriptiveErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,7 +23,7 @@ public class Main {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.err.println("Usage: java -jar ChubbyCompiler.jar <input_file.cbb> [outputdirectory]");
+            System.err.println("Usage: java -jar ChubbyCompiler.jar <input_file.cbb> [output_directory]");
             return;
         }
 
@@ -62,13 +64,13 @@ public class Main {
                 writeClassFiles(compiledClasses, outputDirectory);
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Error reading or writing file: " + e.getMessage());
         } catch (RecognitionException e) {
             System.err.println("Recognition error during parsing: " + e.getMessage());
         } catch (CompilationException e) {
             System.err.println("Compilation error: " + e.getMessage());
-        }  catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("An unexpected error occurred: " + e.getMessage());
             e.printStackTrace();
         }
