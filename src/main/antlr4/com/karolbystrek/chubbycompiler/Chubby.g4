@@ -203,10 +203,10 @@ unaryExpression
 
 postfixExpression
     : primaryExpression
-    ( DOT IDENTIFIER // Member access: obj.func()
-    | LEFT_SQUARE expression RIGHT_SQUARE // Array access: arr[idx]
-    | LEFT_PAREN argument_list? RIGHT_PAREN // Function call: func() or obj.func()
-    )* // Allow chaining: obj.func()[idx].field
+    ( DOT IDENTIFIER
+    | LEFT_SQUARE expression RIGHT_SQUARE
+    | LEFT_PAREN argument_list? RIGHT_PAREN
+    )*
     ;
 
 primaryExpression
