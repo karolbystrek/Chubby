@@ -215,7 +215,7 @@ object_creation
     ;
 
 literal
-    : INTEGER_LITERAL | FLOAT_LITERAL | DOUBLE_LITERAL |  CHAR_LITERAL | STRING_LITERAL | TRUE | FALSE | NULL
+    : INTEGER_LITERAL | LONG_LITERAL | FLOAT_LITERAL | DOUBLE_LITERAL |  CHAR_LITERAL | STRING_LITERAL | TRUE | FALSE | NULL
     ;
 
 CLASS : 'class';
@@ -301,6 +301,7 @@ SEMICOLON: ';';
 DOT: '.';
 COLON: ':';
 
+LONG_LITERAL: [0-9]+ [lL];
 FLOAT_LITERAL
     : ( [0-9]+  '.' [0-9]* | '.' [0-9]+ ) ( [eE] [+\-]? [0-9]+ )? [fF]
     | [0-9]+ ( [eE] [+\-]? [0-9]+ )? [fF]

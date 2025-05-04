@@ -42,15 +42,9 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitProgram(ChubbyParser.ProgramContext ctx) {
-        List<ImportStatementNode> imports = ctx.import_statement().stream()
-                .map(this::visitImport_statement)
-                .map(ImportStatementNode.class::cast)
-                .toList();
+        List<ImportStatementNode> imports = ctx.import_statement().stream().map(this::visitImport_statement).map(ImportStatementNode.class::cast).toList();
 
-        List<ClassDefinitionNode> classDefinitions = ctx.class_definition().stream()
-                .map(this::visitClass_definition)
-                .map(ClassDefinitionNode.class::cast)
-                .toList();
+        List<ClassDefinitionNode> classDefinitions = ctx.class_definition().stream().map(this::visitClass_definition).map(ClassDefinitionNode.class::cast).toList();
 
         return new ProgramNode(imports, classDefinitions, getLine(ctx), getColumn(ctx));
     }
@@ -65,10 +59,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
     public AstNode visitClass_definition(ChubbyParser.Class_definitionContext ctx) {
         Visibility visibility = ((VisibilityNode) visitVisibility_modifier(ctx.visibility_modifier())).getVisibility();
         String name = ctx.IDENTIFIER().getText();
-        List<ClassMemberNode> members = ctx.class_member().stream()
-                .map(this::visitClass_member)
-                .map(ClassMemberNode.class::cast)
-                .toList();
+        List<ClassMemberNode> members = ctx.class_member().stream().map(this::visitClass_member).map(ClassMemberNode.class::cast).toList();
 
         return new ClassDefinitionNode(visibility, name, members, getLine(ctx), getColumn(ctx));
     }
@@ -87,19 +78,11 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitConstructor_definition(ChubbyParser.Constructor_definitionContext ctx) {
-        Visibility visibility = ctx.visibility_modifier() != null ?
-                ((VisibilityNode) visitVisibility_modifier(ctx.visibility_modifier())).getVisibility() :
-                Visibility.PUBLIC;
+        Visibility visibility = ctx.visibility_modifier() != null ? ((VisibilityNode) visitVisibility_modifier(ctx.visibility_modifier())).getVisibility() : Visibility.PUBLIC;
         String name = ctx.IDENTIFIER().getText();
-        List<ParameterNode> parameters = ctx.parameter().stream()
-                .map(this::visitParameter)
-                .map(ParameterNode.class::cast)
-                .toList();
+        List<ParameterNode> parameters = ctx.parameter().stream().map(this::visitParameter).map(ParameterNode.class::cast).toList();
 
-        List<StatementNode> body = ctx.statement().stream()
-                .map(this::visitStatement)
-                .map(StatementNode.class::cast)
-                .toList();
+        List<StatementNode> body = ctx.statement().stream().map(this::visitStatement).map(StatementNode.class::cast).toList();
 
         return new ConstructorDefinitionNode(visibility, name, parameters, body, getLine(ctx), getColumn(ctx));
     }
@@ -125,15 +108,9 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         Visibility visibility = ((VisibilityNode) visitVisibility_modifier(ctx.visibility_modifier())).getVisibility();
         boolean isStatic = ctx.STATIC() != null;
         String name = ctx.IDENTIFIER().getText();
-        List<ParameterNode> parameters = ctx.parameter().stream()
-                .map(this::visitParameter)
-                .map(ParameterNode.class::cast)
-                .toList();
+        List<ParameterNode> parameters = ctx.parameter().stream().map(this::visitParameter).map(ParameterNode.class::cast).toList();
         TypeNode returnType = (TypeNode) visitReturn_type(ctx.return_type());
-        List<StatementNode> body = ctx.statement().stream()
-                .map(this::visitStatement)
-                .map(StatementNode.class::cast)
-                .toList();
+        List<StatementNode> body = ctx.statement().stream().map(this::visitStatement).map(StatementNode.class::cast).toList();
 
         return new FunctionDefinitionNode(visibility, isStatic, name, parameters, returnType, body, getLine(ctx), getColumn(ctx));
     }
@@ -320,9 +297,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         for (int i = 0; i < ctx.CATCH().size(); i++) {
             ParameterNode exceptionParam = (ParameterNode) visitParameter(ctx.parameter(i));
             int startCatchBodyIndex = ctx.RIGHT_PAREN(i).getSymbol().getTokenIndex() + 1;
-            int endCatchBodyIndex = (i + 1 < ctx.CATCH().size()) ?
-                    ctx.CATCH(i + 1).getSymbol().getTokenIndex() :
-                    (ctx.FINALLY() != null ? ctx.FINALLY().getSymbol().getTokenIndex() : ctx.ENDTRY().getSymbol().getTokenIndex());
+            int endCatchBodyIndex = (i + 1 < ctx.CATCH().size()) ? ctx.CATCH(i + 1).getSymbol().getTokenIndex() : (ctx.FINALLY() != null ? ctx.FINALLY().getSymbol().getTokenIndex() : ctx.ENDTRY().getSymbol().getTokenIndex());
             BlockNode catchBody = createBlockNode(ctx.statement(), startCatchBodyIndex, endCatchBodyIndex);
             catchClauses.add(new CatchClauseNode(exceptionParam, catchBody, getLine(ctx.CATCH(i).getSymbol()), getColumn(ctx.CATCH(i).getSymbol())));
         }
@@ -343,18 +318,14 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         ExpressionNode ifCondition = (ExpressionNode) visitBoolean_expression(ctx.boolean_expression(0));
 
         int thenStartIndex = ctx.THEN(0).getSymbol().getTokenIndex() + 1;
-        int thenEndIndex = ctx.ELSIF().isEmpty() ?
-                (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex()) :
-                ctx.ELSIF(0).getSymbol().getTokenIndex();
+        int thenEndIndex = ctx.ELSIF().isEmpty() ? (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex()) : ctx.ELSIF(0).getSymbol().getTokenIndex();
         BlockNode thenBranch = createBlockNode(ctx.statement(), thenStartIndex, thenEndIndex);
 
         List<IfStatementNode.ElsifBranch> elsifBranches = new ArrayList<>();
         for (int i = 0; i < ctx.ELSIF().size(); i++) {
             ExpressionNode elsifCondition = (ExpressionNode) visitBoolean_expression(ctx.boolean_expression(i + 1));
             int elsifStartIndex = ctx.THEN(i + 1).getSymbol().getTokenIndex() + 1;
-            int elsifEndIndex = (i + 1 < ctx.ELSIF().size()) ?
-                    ctx.ELSIF(i + 1).getSymbol().getTokenIndex() :
-                    (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex());
+            int elsifEndIndex = (i + 1 < ctx.ELSIF().size()) ? ctx.ELSIF(i + 1).getSymbol().getTokenIndex() : (ctx.ELSE() != null ? ctx.ELSE().getSymbol().getTokenIndex() : ctx.ENDIF().getSymbol().getTokenIndex());
             BlockNode elsifBody = createBlockNode(ctx.statement(), elsifStartIndex, elsifEndIndex);
             elsifBranches.add(new IfStatementNode.ElsifBranch(elsifCondition, elsifBody));
         }
@@ -396,11 +367,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
     }
 
     private BlockNode createBlockNode(List<ChubbyParser.StatementContext> allStatements, int startIndex, int endIndex) {
-        List<StatementNode> blockStatements = allStatements.stream()
-                .filter(stmtCtx -> stmtCtx.getStart().getTokenIndex() >= startIndex && stmtCtx.getStop().getTokenIndex() < endIndex)
-                .map(this::visitStatement)
-                .map(StatementNode.class::cast)
-                .toList();
+        List<StatementNode> blockStatements = allStatements.stream().filter(stmtCtx -> stmtCtx.getStart().getTokenIndex() >= startIndex && stmtCtx.getStop().getTokenIndex() < endIndex).map(this::visitStatement).map(StatementNode.class::cast).toList();
         int line = blockStatements.isEmpty() ? 0 : blockStatements.getFirst().getLineNumber();
         int col = blockStatements.isEmpty() ? 0 : blockStatements.getFirst().getColumnNumber();
         return new BlockNode(blockStatements, line, col);
@@ -576,9 +543,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
                     baseExpr = new ArrayAccessNode(baseExpr, indexExpr, getLine(node.getSymbol()), getColumn(node.getSymbol()));
                 } else if (node.getSymbol().getType() == ChubbyParser.LEFT_PAREN) {
                     int argListIndex = findArgumentListIndexForParen(ctx, node);
-                    List<ExpressionNode> arguments = (argListIndex != -1 && ctx.argument_list(argListIndex) != null) ?
-                            ((ArgumentListNode) visitArgument_list(ctx.argument_list(argListIndex))).getArguments() :
-                            Collections.emptyList();
+                    List<ExpressionNode> arguments = (argListIndex != -1 && ctx.argument_list(argListIndex) != null) ? ((ArgumentListNode) visitArgument_list(ctx.argument_list(argListIndex))).getArguments() : Collections.emptyList();
                     baseExpr = new FunctionCallNode(baseExpr, arguments, getLine(node.getSymbol()), getColumn(node.getSymbol()));
                 }
             }
@@ -616,7 +581,6 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         } else if (ctx.IDENTIFIER() != null) {
             return new IdentifierNode(ctx.IDENTIFIER().getText(), getLine(ctx.IDENTIFIER().getSymbol()), getColumn(ctx.IDENTIFIER().getSymbol()));
         } else if (ctx.expression() != null) {
-            // Parenthesized expression
             return visitExpression(ctx.expression());
         } else if (ctx.object_creation() != null) {
             return visitObject_creation(ctx.object_creation());
@@ -628,10 +592,7 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitArgument_list(ChubbyParser.Argument_listContext ctx) {
-        List<ExpressionNode> arguments = ctx.expression().stream()
-                .map(this::visitExpression)
-                .map(ExpressionNode.class::cast)
-                .toList();
+        List<ExpressionNode> arguments = ctx.expression().stream().map(this::visitExpression).map(ExpressionNode.class::cast).toList();
         return new ArgumentListNode(arguments, getLine(ctx), getColumn(ctx));
     }
 
@@ -642,15 +603,10 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
         int col = getColumn(ctx.NEW().getSymbol());
 
         if (ctx.LEFT_PAREN() != null) {
-            List<ExpressionNode> arguments = ctx.argument_list() != null ?
-                    ((ArgumentListNode) visitArgument_list(ctx.argument_list())).getArguments() :
-                    Collections.emptyList();
+            List<ExpressionNode> arguments = ctx.argument_list() != null ? ((ArgumentListNode) visitArgument_list(ctx.argument_list())).getArguments() : Collections.emptyList();
             return new ObjectCreationNode(type, arguments, line, col);
         } else {
-            List<ExpressionNode> dimensionSizes = ctx.expression().stream()
-                    .map(this::visitExpression)
-                    .map(ExpressionNode.class::cast)
-                    .toList();
+            List<ExpressionNode> dimensionSizes = ctx.expression().stream().map(this::visitExpression).map(ExpressionNode.class::cast).toList();
             return new ArrayCreationNode(type, dimensionSizes, line, col);
         }
     }
@@ -659,6 +615,8 @@ public class AstBuilderVisitor extends ChubbyBaseVisitor<AstNode> {
     public AstNode visitLiteral(ChubbyParser.LiteralContext ctx) {
         if (ctx.INTEGER_LITERAL() != null) {
             return new IntegerLiteralNode(Integer.parseInt(ctx.INTEGER_LITERAL().getText()), getLine(ctx), getColumn(ctx));
+        } else if (ctx.LONG_LITERAL() != null) {
+            return new LongLiteralNode(Long.parseLong(ctx.LONG_LITERAL().getText()), getLine(ctx), getColumn(ctx));
         } else if (ctx.FLOAT_LITERAL() != null) {
             String floatText = ctx.FLOAT_LITERAL().getText().toUpperCase().replace("F", "");
             return new FloatLiteralNode(Float.parseFloat(floatText), getLine(ctx), getColumn(ctx));
