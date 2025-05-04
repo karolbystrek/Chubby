@@ -131,9 +131,9 @@ try_catch_statement
     ;
 
 if_statement
-    : IF boolean_expression THEN
+    : IF expression THEN
     statement*
-    ( ELSIF boolean_expression THEN statement* )*
+    ( ELSIF expression THEN statement* )*
     ( ELSE statement* )?
     ENDIF
     ;
@@ -146,14 +146,10 @@ for_statement
 
 while_statement
     : WHILE
-    boolean_expression
+    expression
     DO
     statement*
     ENDWHILE
-    ;
-
-boolean_expression
-    : logicalOrExpression
     ;
 
 expression
