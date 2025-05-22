@@ -4,19 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.karolbystrek.chubbycompiler.ast.expression.ExpressionNode;
-import com.karolbystrek.chubbycompiler.ast.expression.IdentifierNode;
-import com.karolbystrek.chubbycompiler.ast.expression.LiteralNode;
-import com.karolbystrek.chubbycompiler.ast.expression.literal.*;
-import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
-import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
-import com.karolbystrek.chubbycompiler.ast.statement.simple.AssignmentStatementNode;
-import com.karolbystrek.chubbycompiler.ast.statement.simple.ExpressionStatementNode;
-import com.karolbystrek.chubbycompiler.ast.statement.simple.LocalVariableDeclarationNode;
-import com.karolbystrek.chubbycompiler.symbol.LocalVariableSymbol;
-import com.karolbystrek.chubbycompiler.symbol.ParameterSymbol;
-import com.karolbystrek.chubbycompiler.symbol.Symbol;
-import com.karolbystrek.chubbycompiler.symbol.SymbolKind;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -31,7 +18,26 @@ import com.karolbystrek.chubbycompiler.ast.ProgramNode;
 import com.karolbystrek.chubbycompiler.ast.TypeNode;
 import com.karolbystrek.chubbycompiler.ast.VariableDefinitionNode;
 import com.karolbystrek.chubbycompiler.ast.Visibility;
+import com.karolbystrek.chubbycompiler.ast.expression.ExpressionNode;
+import com.karolbystrek.chubbycompiler.ast.expression.IdentifierNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.BooleanLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.CharLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.DoubleLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.FloatLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.IntegerLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.LongLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.NullLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.expression.literal.StringLiteralNode;
+import com.karolbystrek.chubbycompiler.ast.statement.BlockNode;
+import com.karolbystrek.chubbycompiler.ast.statement.StatementNode;
+import com.karolbystrek.chubbycompiler.ast.statement.simple.AssignmentStatementNode;
+import com.karolbystrek.chubbycompiler.ast.statement.simple.ExpressionStatementNode;
+import com.karolbystrek.chubbycompiler.ast.statement.simple.LocalVariableDeclarationNode;
 import com.karolbystrek.chubbycompiler.exceptions.CompilationException;
+import com.karolbystrek.chubbycompiler.symbol.LocalVariableSymbol;
+import com.karolbystrek.chubbycompiler.symbol.ParameterSymbol;
+import com.karolbystrek.chubbycompiler.symbol.Symbol;
+import com.karolbystrek.chubbycompiler.symbol.SymbolKind;
 
 public class CodeGenerator implements Opcodes {
 
@@ -42,12 +48,13 @@ public class CodeGenerator implements Opcodes {
     private Map<Symbol, VariableInfo> localVariableIndexes;
     private int nextLocalVariableIndex;
 
-    public CodeGenerator() {}
+    public CodeGenerator() {
+    }
 
     public Map<String, byte[]> generate(ProgramNode programNode) throws CompilationException {
         Map<String, byte[]> compiledCLasses = new HashMap<>();
 
-        for(ClassDefinitionNode classDefinition : programNode.getClassDefinitions()) {
+        for (ClassDefinitionNode classDefinition : programNode.getClassDefinitions()) {
             try {
                 byte[] bytecode = generateClass(classDefinition);
 
@@ -74,7 +81,6 @@ public class CodeGenerator implements Opcodes {
         writer.visit(JAVA_VERSION, accessFlags, className, null, OBJECT_SUPER_CLASS, null);
 
         // TODO: Visit fields, methods, etc.
-
         boolean constructorDefined = false;
         for (ClassMemberNode classMember : classDefinition.getMembers()) {
             switch (classMember) {
@@ -85,8 +91,10 @@ public class CodeGenerator implements Opcodes {
                 case FunctionDefinitionNode function -> {
                     generateFunction(function, writer, className);
                 }
-                case VariableDefinitionNode field -> generateField(field, writer);
-                default -> throw new CompilationException("Unknown class member type encountered: " + classMember.getClass().getSimpleName());
+                case VariableDefinitionNode field ->
+                    generateField(field, writer);
+                default ->
+                    throw new CompilationException("Unknown class member type encountered: " + classMember.getClass().getSimpleName());
             }
         }
 
@@ -122,11 +130,9 @@ public class CodeGenerator implements Opcodes {
         localVariableIndexes.put(thisSymbol, new VariableInfo(nextLocalVariableIndex, startMethod));
         nextLocalVariableIndex++;
 
-
         for (ParameterNode parameter : constructor.getParameters()) {
             // TODO: Get parameter symbol from the AST node once it's stored there by SemanticAnalyzer
             Symbol parameterSymbol = findSymbolInCurrentScope(parameter.getName(), parameter.getType());
-
 
             if (parameterSymbol == null) {
                 throw new CompilationException("Internal Error: Parameter symbol not found for '" + parameter.getName() + "' during code generation.",
@@ -138,26 +144,24 @@ public class CodeGenerator implements Opcodes {
             nextLocalVariableIndex += varSize;
         }
 
-
         visitor.visitVarInsn(ALOAD, 0);
         visitor.visitMethodInsn(INVOKESPECIAL, OBJECT_SUPER_CLASS, CONSTRUCTOR_METHOD_NAME, "()V", false);
 
         // TODO: Initialize fields based on constructor parameters or default values AFTER super() call
-
         generateStatementList(constructor.getBody(), visitor);
-
 
         org.objectweb.asm.Label endMethod = new org.objectweb.asm.Label();
         visitor.visitLabel(endMethod);
 
         visitor.visitInsn(RETURN);
 
-
         // TODO: Lepszy sposób identyfikacji symbolu 'this' (np. po rodzaju symbolu)
         for (Map.Entry<Symbol, VariableInfo> entry : localVariableIndexes.entrySet()) {
             Symbol symbol = entry.getKey();
             VariableInfo varInfo = entry.getValue();
-            if (symbol.getName().equals("this")) continue;
+            if (symbol.getName().equals("this")) {
+                continue;
+            }
 
             visitor.visitLocalVariable(
                     symbol.getName(),
@@ -168,7 +172,6 @@ public class CodeGenerator implements Opcodes {
                     varInfo.index
             );
         }
-
 
         visitor.visitMaxs(0, 0);
         visitor.visitEnd();
@@ -217,7 +220,6 @@ public class CodeGenerator implements Opcodes {
             // TODO: Get parameter symbol from the AST node once it's stored there by SemanticAnalyzer
             Symbol parameterSymbol = findSymbolInCurrentScope(parameter.getName(), parameter.getType());
 
-
             if (parameterSymbol == null) {
                 throw new CompilationException("Internal Error: Parameter symbol not found for '" + parameter.getName() + "' during code generation.",
                         parameter.getLineNumber(), parameter.getColumnNumber());
@@ -228,9 +230,7 @@ public class CodeGenerator implements Opcodes {
             nextLocalVariableIndex += varSize;
         }
 
-
         generateStatementList(function.getBody(), visitor);
-
 
         org.objectweb.asm.Label endMethod = new org.objectweb.asm.Label();
         visitor.visitLabel(endMethod);
@@ -251,8 +251,9 @@ public class CodeGenerator implements Opcodes {
         for (Map.Entry<Symbol, VariableInfo> entry : localVariableIndexes.entrySet()) {
             Symbol symbol = entry.getKey();
             VariableInfo varInfo = entry.getValue();
-            if (!function.isStatic() && symbol.getName().equals("this")) continue;
-
+            if (!function.isStatic() && symbol.getName().equals("this")) {
+                continue;
+            }
 
             visitor.visitLocalVariable(
                     symbol.getName(),
@@ -263,7 +264,6 @@ public class CodeGenerator implements Opcodes {
                     varInfo.index
             );
         }
-
 
         visitor.visitMaxs(0, 0);
         visitor.visitEnd();
@@ -278,34 +278,31 @@ public class CodeGenerator implements Opcodes {
         }
     }
 
-
     private void generateStatement(StatementNode statement, MethodVisitor visitor) throws CompilationException {
-        if (statement == null) {
-            throw new CompilationException("Internal Error: Attempted to generate code for a null statement node.", 0, 0);
-        }
-
-        if (statement instanceof LocalVariableDeclarationNode localVariableDeclaration) {
-            generateLocalVariableDeclaration(localVariableDeclaration, visitor);
-        } else if (statement instanceof AssignmentStatementNode assignmentStatement) {
-            generateAssignmentStatement(assignmentStatement, visitor);
-        } else if (statement instanceof BlockNode blockNode) {
-            generateStatementList(blockNode.getStatements(), visitor);
-        } else if (statement instanceof ExpressionStatementNode expressionStatementNode) {
-            generateExpression(expressionStatementNode.getExpression(), visitor);
+        switch (statement) {
+            case null ->
+                throw new CompilationException("Internal Error: Attempted to generate code for a null statement node.", 0, 0);
+            case LocalVariableDeclarationNode localVariableDeclaration ->
+                generateLocalVariableDeclaration(localVariableDeclaration, visitor);
+            case AssignmentStatementNode assignmentStatement ->
+                generateAssignmentStatement(assignmentStatement, visitor);
+            case BlockNode blockNode ->
+                generateStatementList(blockNode.getStatements(), visitor);
+            case ExpressionStatementNode expressionStatementNode ->
+                generateExpression(expressionStatementNode.getExpression(), visitor);
             // TODO: If the expression leaves a value on the stack (i.e., it's not void), pop it off.
-        }
-        // TODO: Add generation for other statement types (IfStatementNode, WhileStatementNode, ForStatementNode, TryCatchStatementNode, ReturnStatementNode, ThrowStatementNode)
-        else {
-            throw new CompilationException("Code generation not implemented for statement type: " + statement.getClass().getSimpleName(),
-                    statement.getLineNumber(), statement.getColumnNumber());
-        }
+            default ->
+                throw new CompilationException("Code generation not implemented for statement type: " + statement.getClass().getSimpleName(),
+                        statement.getLineNumber(), statement.getColumnNumber());
+        } // TODO: Add generation for other statement types (IfStatementNode, WhileStatementNode, ForStatementNode, TryCatchStatementNode, ReturnStatementNode, ThrowStatementNode)
     }
 
     /**
-     * Generates bytecode for a local variable declaration.
-     * Assumes SemanticAnalyzer has resolved the symbol and checked types.
-     * TODO: This method contains temporary hacks for symbol lookup and index assignment.
-     * TODO: Ensure SemanticAnalyzer stores the Symbol and its index in LocalVariableDeclarationNode.
+     * Generates bytecode for a local variable declaration. Assumes
+     * SemanticAnalyzer has resolved the symbol and checked types. TODO: This
+     * method contains temporary hacks for symbol lookup and index assignment.
+     * TODO: Ensure SemanticAnalyzer stores the Symbol and its index in
+     * LocalVariableDeclarationNode.
      */
     private void generateLocalVariableDeclaration(LocalVariableDeclarationNode node, MethodVisitor visitor) throws CompilationException {
         // TODO: Get the Symbol and its assigned index from the AST node once it's stored there by SemanticAnalyzer.
@@ -337,7 +334,6 @@ public class CodeGenerator implements Opcodes {
 
         visitor.visitLabel(varInfo.startLabel);
 
-
         // TODO: Add LocalVariableTable attribute using MethodVisitor.visitLocalVariable (Done at the end of the method using the map)
     }
 
@@ -364,8 +360,7 @@ public class CodeGenerator implements Opcodes {
 
             visitor.visitVarInsn(storeOpcode, variableIndex);
 
-        }
-        // TODO: Add generation for MemberAccessNode as LValue (PUTFIELD, PUTSTATIC)
+        } // TODO: Add generation for MemberAccessNode as LValue (PUTFIELD, PUTSTATIC)
         // TODO: Add generation for ArrayAccessNode as LValue (IASTORE, AASTORE etc.)
         else {
             throw new CompilationException("Code generation not implemented for LValue type in assignment: " + node.getLValue().getClass().getSimpleName(),
@@ -374,109 +369,114 @@ public class CodeGenerator implements Opcodes {
     }
 
     /**
-     * Generates bytecode for an expression.
-     * The result of the expression should be left on the operand stack.
-     * Assumes SemanticAnalyzer has resolved symbols and determined types.
+     * Generates bytecode for an expression. The result of the expression should
+     * be left on the operand stack. Assumes SemanticAnalyzer has resolved
+     * symbols and determined types.
      */
     /**
-     * Generates bytecode for an expression.
-     * The result of the expression should be left on the operand stack.
-     * Assumes SemanticAnalyzer has resolved symbols and determined types.
+     * Generates bytecode for an expression. The result of the expression should
+     * be left on the operand stack. Assumes SemanticAnalyzer has resolved
+     * symbols and determined types.
      */
     private void generateExpression(ExpressionNode expressionNode, MethodVisitor visitor) throws CompilationException {
-        if (expressionNode == null) {
-            throw new CompilationException("Internal Error: Attempted to generate code for a null expression node.", 0, 0);
-        }
+        switch (expressionNode) {
+            case null ->
+                throw new CompilationException("Internal Error: Attempted to generate code for a null expression node.", 0, 0);
+            case IdentifierNode identifierNode -> {
+                Symbol variableSymbol = identifierNode.getSymbol();
+                if (variableSymbol == null) {
+                    throw new CompilationException("Internal Error: Symbol not resolved for identifier '" + identifierNode.getName() + "' during code generation.",
+                            identifierNode.getLineNumber(), identifierNode.getColumnNumber());
+                }
+                if (variableSymbol.getKind() != SymbolKind.LOCAL_VARIABLE && variableSymbol.getKind() != SymbolKind.PARAMETER) {
+                    // TODO: Add generation for FIELD symbols (GETFIELD, GETSTATIC)
+                    throw new CompilationException("Code generation not implemented for symbol kind '" + variableSymbol.getKind() + "' used as RValue.",
+                            identifierNode.getLineNumber(), identifierNode.getColumnNumber());
+                }
+                // Zaimplementowany TODO: Znajdź indeks zmiennej lokalnej/parametry przypisany do tego symbolu.
+                VariableInfo varInfo = localVariableIndexes.get(variableSymbol);
+                if (varInfo == null) {
+                    throw new CompilationException("Internal Error: VariableInfo not found for local variable/parameter '" + identifierNode.getName() + "' during code generation (Index not assigned).",
+                            identifierNode.getLineNumber(), identifierNode.getColumnNumber());
+                }
+                int variableIndex = varInfo.index;
+                int loadOpcode = getLoadOpcode(variableSymbol.getType());
+                visitor.visitVarInsn(loadOpcode, variableIndex);
 
-        if (expressionNode instanceof IdentifierNode identifierNode) {
-            Symbol variableSymbol = identifierNode.getSymbol();
-            if (variableSymbol == null) {
-                throw new CompilationException("Internal Error: Symbol not resolved for identifier '" + identifierNode.getName() + "' during code generation.",
-                        identifierNode.getLineNumber(), identifierNode.getColumnNumber());
             }
-            if (variableSymbol.getKind() != SymbolKind.LOCAL_VARIABLE && variableSymbol.getKind() != SymbolKind.PARAMETER) {
-                // TODO: Add generation for FIELD symbols (GETFIELD, GETSTATIC)
-                throw new CompilationException("Code generation not implemented for symbol kind '" + variableSymbol.getKind() + "' used as RValue.",
-                        identifierNode.getLineNumber(), identifierNode.getColumnNumber());
+            case IntegerLiteralNode integerLiteralNode -> {
+                int intValue = integerLiteralNode.getValue();
+                if (intValue >= -1 && intValue <= 5) {
+                    visitor.visitInsn(ICONST_0 + intValue);
+                } else if (intValue >= Byte.MIN_VALUE && intValue <= Byte.MAX_VALUE) {
+                    visitor.visitIntInsn(BIPUSH, intValue);
+                } else if (intValue >= Short.MIN_VALUE && intValue <= Short.MAX_VALUE) {
+                    visitor.visitIntInsn(SIPUSH, intValue);
+                } else {
+                    visitor.visitLdcInsn(intValue);
+                }
             }
-            // Zaimplementowany TODO: Znajdź indeks zmiennej lokalnej/parametry przypisany do tego symbolu.
-            VariableInfo varInfo = localVariableIndexes.get(variableSymbol);
-            if (varInfo == null) {
-                throw new CompilationException("Internal Error: VariableInfo not found for local variable/parameter '" + identifierNode.getName() + "' during code generation (Index not assigned).",
-                        identifierNode.getLineNumber(), identifierNode.getColumnNumber());
+            case LongLiteralNode longLiteralNode -> {
+                long longValue = longLiteralNode.getValue();
+                if (longValue == 0L || longValue == 1L) {
+                    visitor.visitInsn(LCONST_0 + (int) longValue);
+                } else {
+                    visitor.visitLdcInsn(longValue);
+                }
             }
-            int variableIndex = varInfo.index;
-            int loadOpcode = getLoadOpcode(variableSymbol.getType());
-            visitor.visitVarInsn(loadOpcode, variableIndex);
-
-        } else if (expressionNode instanceof IntegerLiteralNode integerLiteralNode) {
-            int intValue = integerLiteralNode.getValue();
-            if (intValue >= -1 && intValue <= 5) {
-                visitor.visitInsn(ICONST_0 + intValue);
-            } else if (intValue >= Byte.MIN_VALUE && intValue <= Byte.MAX_VALUE) {
-                visitor.visitIntInsn(BIPUSH, intValue);
-            } else if (intValue >= Short.MIN_VALUE && intValue <= Short.MAX_VALUE) {
-                visitor.visitIntInsn(SIPUSH, intValue);
-            } else {
-                visitor.visitLdcInsn(intValue);
+            case FloatLiteralNode floatLiteralNode -> {
+                float floatValue = floatLiteralNode.getValue();
+                if (floatValue == 0.0f) {
+                    visitor.visitInsn(FCONST_0);
+                } else if (floatValue == 1.0f) {
+                    visitor.visitInsn(FCONST_1);
+                } else if (floatValue == 2.0f) {
+                    visitor.visitInsn(FCONST_2);
+                } else {
+                    visitor.visitLdcInsn(floatValue);
+                }
             }
-        } else if (expressionNode instanceof LongLiteralNode longLiteralNode) {
-            long longValue = longLiteralNode.getValue();
-            if (longValue == 0L || longValue == 1L) {
-                visitor.visitInsn(LCONST_0 + (int)longValue);
-            } else {
-                visitor.visitLdcInsn(longValue);
+            case DoubleLiteralNode doubleLiteralNode -> {
+                double doubleValue = doubleLiteralNode.getValue();
+                if (doubleValue == 0.0d) {
+                    visitor.visitInsn(DCONST_0);
+                } else if (doubleValue == 1.0d) {
+                    visitor.visitInsn(DCONST_1);
+                } else {
+                    visitor.visitLdcInsn(doubleValue);
+                }
             }
-        } else if (expressionNode instanceof FloatLiteralNode floatLiteralNode) {
-            float floatValue = floatLiteralNode.getValue();
-            if (floatValue == 0.0f) {
-                visitor.visitInsn(FCONST_0);
-            } else if (floatValue == 1.0f) {
-                visitor.visitInsn(FCONST_1);
-            } else if (floatValue == 2.0f) {
-                visitor.visitInsn(FCONST_2);
-            } else {
-                visitor.visitLdcInsn(floatValue);
+            case BooleanLiteralNode booleanLiteralNode -> {
+                boolean boolValue = booleanLiteralNode.getValue();
+                visitor.visitInsn(boolValue ? ICONST_1 : ICONST_0);
             }
-        } else if (expressionNode instanceof DoubleLiteralNode doubleLiteralNode) {
-            double doubleValue = doubleLiteralNode.getValue();
-            if (doubleValue == 0.0d) {
-                visitor.visitInsn(DCONST_0);
-            } else if (doubleValue == 1.0d) {
-                visitor.visitInsn(DCONST_1);
-            } else {
-                visitor.visitLdcInsn(doubleValue);
+            case CharLiteralNode charLiteralNode -> {
+                char charValue = charLiteralNode.getValue();
+                if (charValue >= -1 && charValue <= 5) {
+                    visitor.visitInsn(ICONST_0 + charValue);
+                } else if (charValue >= Byte.MIN_VALUE && charValue <= Byte.MAX_VALUE) {
+                    visitor.visitIntInsn(BIPUSH, charValue);
+                } else if (charValue >= Short.MIN_VALUE && charValue <= Short.MAX_VALUE) {
+                    visitor.visitIntInsn(SIPUSH, charValue);
+                } else {
+                    visitor.visitLdcInsn((int) charValue);
+                }
             }
-        } else if (expressionNode instanceof BooleanLiteralNode booleanLiteralNode) {
-            boolean boolValue = booleanLiteralNode.getValue();
-            visitor.visitInsn(boolValue ? ICONST_1 : ICONST_0);
-        } else if (expressionNode instanceof CharLiteralNode charLiteralNode) {
-            char charValue = charLiteralNode.getValue();
-            if (charValue >= -1 && charValue <= 5) {
-                visitor.visitInsn(ICONST_0 + charValue);
-            } else if (charValue >= Byte.MIN_VALUE && charValue <= Byte.MAX_VALUE) {
-                visitor.visitIntInsn(BIPUSH, charValue);
-            } else if (charValue >= Short.MIN_VALUE && charValue <= Short.MAX_VALUE) {
-                visitor.visitIntInsn(SIPUSH, charValue);
-            } else {
-                visitor.visitLdcInsn((int) charValue);
+            case StringLiteralNode stringLiteralNode -> {
+                String stringValue = stringLiteralNode.getValue();
+                visitor.visitLdcInsn(stringValue);
             }
-        } else if (expressionNode instanceof StringLiteralNode stringLiteralNode) {
-            String stringValue = stringLiteralNode.getValue();
-            visitor.visitLdcInsn(stringValue);
-        } else if (expressionNode instanceof NullLiteralNode nullLiteralNode) {
-            visitor.visitInsn(ACONST_NULL);
-        }
-        // TODO: Remove the redundant and incorrect instanceof LiteralNode<?> check
-        // TODO: Add generation for other expression types (BinaryExpressionNode, UnaryExpressionNode, FunctionCallNode, MemberAccessNode, ObjectCreationNode, ArrayCreationNode, ThisReferenceNode)
-        else {
-            throw new CompilationException("Code generation not implemented for expression type: " + expressionNode.getClass().getSimpleName(),
-                    expressionNode.getLineNumber(), expressionNode.getColumnNumber());
-        }
+            case NullLiteralNode nullLiteralNode ->
+                visitor.visitInsn(ACONST_NULL);
+            default ->
+                throw new CompilationException("Code generation not implemented for expression type: " + expressionNode.getClass().getSimpleName(),
+                        expressionNode.getLineNumber(), expressionNode.getColumnNumber());
+        } // TODO: Remove the redundant and incorrect instanceof LiteralNode<?> check
     }
 
     /**
-     * Determines the appropriate JVM store instruction opcode based on the type.
+     * Determines the appropriate JVM store instruction opcode based on the
+     * type.
      */
     private int getStoreOpcode(TypeNode type) throws CompilationException {
         // TODO: Handle other types including arrays and objects
@@ -486,13 +486,19 @@ public class CodeGenerator implements Opcodes {
         // TODO: Handle custom object types (also use ASTORE)
 
         return switch (type.getBaseTypeName()) {
-            case "int", "bool", "byte", "char" -> ISTORE;
-            case "long" -> LSTORE;
-            case "float" -> FSTORE;
-            case "double" -> DSTORE;
-            case "string" -> ASTORE;
+            case "int", "bool", "byte", "char" ->
+                ISTORE;
+            case "long" ->
+                LSTORE;
+            case "float" ->
+                FSTORE;
+            case "double" ->
+                DSTORE;
+            case "string" ->
+                ASTORE;
             // TODO: Handle custom object types (ASTORE)
-            default -> throw new CompilationException("Code generation not implemented for storing type: " + type.getBaseTypeName());
+            default ->
+                throw new CompilationException("Code generation not implemented for storing type: " + type.getBaseTypeName());
         };
     }
 
@@ -507,19 +513,25 @@ public class CodeGenerator implements Opcodes {
         // TODO: Handle custom object types (also use ALOAD)
 
         return switch (type.getBaseTypeName()) {
-            case "int", "bool", "byte", "char" -> ILOAD;
-            case "long" -> LLOAD;
-            case "float" -> FLOAD;
-            case "double" -> DLOAD;
-            case "string" -> ALOAD;
+            case "int", "bool", "byte", "char" ->
+                ILOAD;
+            case "long" ->
+                LLOAD;
+            case "float" ->
+                FLOAD;
+            case "double" ->
+                DLOAD;
+            case "string" ->
+                ALOAD;
             // TODO: Handle custom object types (ALOAD)
-            default -> throw new CompilationException("Code generation not implemented for loading type: " + type.getBaseTypeName());
+            default ->
+                throw new CompilationException("Code generation not implemented for loading type: " + type.getBaseTypeName());
         };
     }
 
     /**
-     * Determines the size of a type in JVM local variable slots.
-     * Most types take 1 slot, long and double take 2.
+     * Determines the size of a type in JVM local variable slots. Most types
+     * take 1 slot, long and double take 2.
      */
     private int getJvmTypeSize(TypeNode type) throws CompilationException {
         if (type == null) {
@@ -531,8 +543,10 @@ public class CodeGenerator implements Opcodes {
         }
 
         return switch (type.getBaseTypeName()) {
-            case "long", "double" -> 2;
-            default -> 1;
+            case "long", "double" ->
+                2;
+            default ->
+                1;
         };
     }
 
@@ -542,9 +556,9 @@ public class CodeGenerator implements Opcodes {
             return false;
         }
         String baseName = type.getBaseTypeName();
-        return "byte".equals(baseName) || "bool".equals(baseName) || "int".equals(baseName) ||
-                "long".equals(baseName) || "float".equals(baseName) || "double".equals(baseName) ||
-                "char".equals(baseName) || "void".equals(baseName);
+        return "byte".equals(baseName) || "bool".equals(baseName) || "int".equals(baseName)
+                || "long".equals(baseName) || "float".equals(baseName) || "double".equals(baseName)
+                || "char".equals(baseName) || "void".equals(baseName);
     }
 
     // TODO: Implement findSymbolInCurrentScope or use the resolved symbol from the AST node.
@@ -588,16 +602,25 @@ public class CodeGenerator implements Opcodes {
         }
 
         String baseDescriptor = switch (typeNode.getBaseTypeName()) {
-            case "byte" -> "B";
-            case "bool" -> "Z";
-            case "int" -> "I";
-            case "long" -> "J";
-            case "float" -> "F";
-            case "double" -> "D";
-            case "char" -> "C";
-            case "string" -> "Ljava/lang/String;";
+            case "byte" ->
+                "B";
+            case "bool" ->
+                "Z";
+            case "int" ->
+                "I";
+            case "long" ->
+                "J";
+            case "float" ->
+                "F";
+            case "double" ->
+                "D";
+            case "char" ->
+                "C";
+            case "string" ->
+                "Ljava/lang/String;";
             // TODO: Handle custom class types correcctly
-            default -> "L" + typeNode.getBaseTypeName() + ";";
+            default ->
+                "L" + typeNode.getBaseTypeName() + ";";
         };
 
         StringBuilder descriptor = new StringBuilder();
@@ -617,15 +640,19 @@ public class CodeGenerator implements Opcodes {
      */
     private int mapVisibilityToAccessFlags(Visibility visibility) {
         return switch (visibility) {
-            case PUBLIC -> ACC_PUBLIC;
-            case PRIVATE -> ACC_PRIVATE;
-            case PROTECTED -> ACC_PROTECTED;
-            default -> ACC_PRIVATE;
+            case PUBLIC ->
+                ACC_PUBLIC;
+            case PRIVATE ->
+                ACC_PRIVATE;
+            case PROTECTED ->
+                ACC_PROTECTED;
+            default ->
+                ACC_PRIVATE;
         };
     }
 
-
     private static class VariableInfo {
+
         final int index;
         final org.objectweb.asm.Label startLabel;
 
@@ -639,6 +666,5 @@ public class CodeGenerator implements Opcodes {
     private Symbol getSymbolFromParameterNode(ParameterNode node) throws CompilationException {
         return new ParameterSymbol(node.getName(), node.getType(), null, node.getLineNumber(), node.getColumnNumber());
     }
-
 
 }
