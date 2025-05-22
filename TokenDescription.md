@@ -21,8 +21,8 @@
 | `ENDFOR`           | `'endfor'`                                                                                                        | Keyword 'endfor'                        |
 | `WHILE`            | `'while'`                                                                                                         | Keyword 'while'                         |
 | `ENDWHILE`         | `'endwhile'`                                                                                                      | Keyword 'endwhile'                      |
-| `CONTINUE`         | `'continue'`                                                                                                      | Keyword 'continue'                      |
-| `BREAK`            | `'break'`                                                                                                         | Keyword 'break'                         |
+| `CONTINUE`         | `'next'`                                                                                                          | Keyword 'next'                          |
+| `BREAK`            | `'stop'`                                                                                                          | Keyword 'stop'                          |
 | `TRY`              | `'try'`                                                                                                           | Keyword 'try'                           |
 | `CATCH`            | `'catch'`                                                                                                         | Keyword 'catch'                         |
 | `FINALLY`          | `'finally'`                                                                                                       | Keyword 'finally'                       |
