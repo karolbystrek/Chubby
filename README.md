@@ -14,7 +14,7 @@ An object-oriented programming language with its own compiler and Integrated Dev
 ## Project Specification
 
 ### 1. General Goals
-The primary goal of the Chubby project is to design and implement a custom, object-oriented programming language. Chybby is also designed as an accessible tool for individuals learning fundamental programming concepts. This project is part of the *Compiler Theory and Compilers* (Teoria Kompilacji i Kompilatory) university course. The process involves defining the language's syntax and semantics, creating grammar, developing a compiler, and exploring key concepts in compilation theory such as lexical analysis, parsing, intermediate code generation, and error handling.
+The primary goal of the Chubby project is to design and implement a custom, object-oriented programming language. This project is part of the *Compiler Theory and Compilers* (Teoria Kompilacji i Kompilatory) university course. The process involves defining the language's syntax and semantics, creating grammar, developing a compiler, and exploring key concepts in compilation theory such as lexical analysis, parsing, intermediate code generation, and error handling.
 
 ### 2. Translator Type
 * **Compiler** 
