@@ -1,8 +1,5 @@
 import sys
-from antlr4 import *
-from antlr.ChubbyParser import ChubbyParser
-from antlr.ChubbyLexer import ChubbyLexer
-from src.ChubbyCompiler import ChubbyCompiler, ChubbyCompilerError, ChubbyErrorListener
+from src.ChubbyCompiler import ChubbyCompiler, ChubbyCompilerError
 
 
 def main(argv):
@@ -10,21 +7,15 @@ def main(argv):
         print("Usage: python Driver.py <input_file>")
         sys.exit(1)
 
-    stream = FileStream(argv[1])
-    lexer = ChubbyLexer(stream)
-    stream = CommonTokenStream(lexer)
-    parser = ChubbyParser(stream)
-
-    if parser.getNumberOfSyntaxErrors() > 0:
-        error_listener = ChubbyErrorListener()
-        parser.removeErrorListeners()
-        parser.addErrorListener(error_listener)
-        parser.program()
-
-    program = parser.program()
+    input_file = argv[1]
+    with open(input_file, "r") as file:
+        chubby_code = file.read()
     compiler = ChubbyCompiler()
     try:
-        compiler.compile(program)
+        success, stout, sterr = compiler.compile(chubby_code)
+        print("Compilation successful!" if success else "Compilation failed.")
+        print("Standard Output:\n", stout, sep="")
+        print("Standard Error:", sterr)
     except ChubbyCompilerError as e:
         print(f"Compilation error: {e}")
 

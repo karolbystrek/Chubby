@@ -1,3 +1,4 @@
+import traceback
 from .JavaBytecodeCompiler import JavaBytecodeCompiler
 from .JavaBytecodeExecutor import JavaBytecodeExecutor
 from antlr.ChubbyParser import ChubbyParser
@@ -24,6 +25,27 @@ class ChubbyErrorListener(ErrorListener):
         self.errors.append(f"line {line}:{column} {msg}")
 
 
+class Scope:
+    def __init__(self):
+        self.variables = {}
+
+    def add_variable(self, name, info):
+        if name in self.variables:
+            raise ChubbyCompilerError(
+                f"Variable '{name}' already defined in this scope {info}"
+            )
+        self.variables[name] = info
+
+    def delete_variable(self, name):
+        if name in self.variables:
+            del self.variables[name]
+        else:
+            raise ChubbyCompilerError(f"Variable '{name}' not found in this scope")
+
+    def has_variable(self, name) -> bool:
+        return name in self.variables
+
+
 class ChubbyCompiler(ChubbyVisitor):
 
     def __init__(self):
@@ -32,6 +54,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.has_scanner = False
         self.has_main_method = False
         self.class_imports = []
+        self.scope_stack = []
 
     def compile(self, chubby_code: str, ide_input: str = None) -> tuple[bool, str, str]:
         """
@@ -49,6 +72,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.has_scanner = False
         self.has_main_method = False
         self.class_imports = []
+        self.scope_stack = []
 
         try:
             input_stream = InputStream(chubby_code)
@@ -69,22 +93,23 @@ class ChubbyCompiler(ChubbyVisitor):
         except ChubbyCompilerError as e:
             return False, "", f"Compilation error: {e.message}"
         except Exception as e:
-            import traceback
             tb_str = traceback.format_exc()
-            return False, "", f"An unexpected parsing/compilation error occurred: {e}\n{tb_str}"
-
-        if not self.has_main_method:
-            return False, "", "Compilation error: No main method defined"
+            return (
+                False,
+                "",
+                f"An unexpected parsing/compilation error occurred: {e}\n{tb_str}",
+            )
 
         bytecode_compiler = JavaBytecodeCompiler()
-        success, logs = bytecode_compiler.compile(
-            self.classes)
+        success, logs = bytecode_compiler.compile(self.classes)
         compilation_logs_str = "\n".join(logs)
         if not success:
             return False, "", f"Compilation failed:\n{compilation_logs_str}"
 
         executor = JavaBytecodeExecutor()
-        stdout, stderr, return_code = executor.execute(list(self.classes.keys()), ide_input=ide_input)
+        stdout, stderr, return_code = executor.execute(
+            list(self.classes.keys()), ide_input=ide_input
+        )
         if return_code == 0:
             return True, stdout, compilation_logs_str
         else:
@@ -94,8 +119,19 @@ class ChubbyCompiler(ChubbyVisitor):
         for class_declaration in ctx.class_definition():
             self.visit(class_declaration)
 
+        if not self.has_main_method:
+            raise ChubbyCompilerError("No main method defined in the program")
+        if not self.classes:
+            raise ChubbyCompilerError("No classes defined in the program")
+
     def visitClass_definition(self, ctx: ChubbyParser.Class_definitionContext) -> None:
+        self.enter_scope()
         class_name = ctx.IDENTIFIER().getText()
+        self.add_to_current_scope(
+            class_name, f"at line {ctx.start.line}, column {ctx.start.column}"
+        )
+        if class_name in self.classes.keys():
+            raise ChubbyCompilerError(f"Class '{class_name}' already defined")
         self.current_class_name = class_name
         self.has_scanner = False
         self.class_imports = []
@@ -108,10 +144,12 @@ class ChubbyCompiler(ChubbyVisitor):
             self.visit(class_member)
         self.classes[class_name].append("}")
         self.classes[class_name] = self.class_imports + self.classes[class_name]
+        self.exit_scope()
 
     def visitConstructor_definition(
         self, ctx: ChubbyParser.Constructor_definitionContext
     ) -> None:
+        self.enter_scope()
         visibility = self.visit(ctx.visibility_modifier())
         constructor_name = ctx.IDENTIFIER().getText()
         if constructor_name != self.current_class_name:
@@ -128,21 +166,23 @@ class ChubbyCompiler(ChubbyVisitor):
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+        self.exit_scope()
 
     def visitFunction_definition(
         self, ctx: ChubbyParser.Function_definitionContext
     ) -> None:
+        self.enter_scope()
         function_name = ctx.IDENTIFIER().getText()
-        if function_name == "main":
-            if self.has_main_method:
-                raise ChubbyCompilerError("Multiple main methods defined")
-            self.has_main_method = True
         visibility = ""
         if ctx.visibility_modifier():
             visibility = self.visit(ctx.visibility_modifier()) + " "
         static = ""
         if ctx.STATIC():
             static = "static "
+        if function_name == "main" and static == "static ":
+            if self.has_main_method:
+                raise ChubbyCompilerError("Multiple main methods defined")
+            self.has_main_method = True
         parameters = ""
         return_type = self.visit(ctx.return_type())
         if ctx.parameter_list():
@@ -154,11 +194,15 @@ class ChubbyCompiler(ChubbyVisitor):
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+        self.exit_scope()
 
     def visitVariable_definition(
         self, ctx: ChubbyParser.Variable_definitionContext
     ) -> None:
         variable_name = ctx.IDENTIFIER().getText()
+        self.add_to_current_scope(
+            variable_name, f"at line {ctx.start.line}, column {ctx.start.column}"
+        )
         visibility = ""
         if ctx.visibility_modifier():
             visibility = self.visit(ctx.visibility_modifier()) + " "
@@ -194,6 +238,7 @@ class ChubbyCompiler(ChubbyVisitor):
             self.visit(ctx.while_statement())
 
     def visitIf_statement(self, ctx: ChubbyParser.If_statementContext) -> None:
+        self.enter_scope()
         expression = self.visit(ctx.expression())
         self.classes[self.current_class_name].append(f"if ({expression}) {{")
         if ctx.statement():
@@ -204,8 +249,10 @@ class ChubbyCompiler(ChubbyVisitor):
             self.visit(ctx.elsif_statement())
         if ctx.else_statement():
             self.visit(ctx.else_statement())
+        self.exit_scope()
 
     def visitElsif_statement(self, ctx: ChubbyParser.Elsif_statementContext) -> None:
+        self.enter_scope()
         expression = self.visit(ctx.expression())
         self.classes[self.current_class_name].append(f"else if ({expression}) {{")
         if ctx.statement():
@@ -214,16 +261,23 @@ class ChubbyCompiler(ChubbyVisitor):
         self.classes[self.current_class_name].append("}")
         if ctx.elsif_statement():
             self.visit(ctx.elsif_statement())
+        self.exit_scope()
 
     def visitElse_statement(self, ctx: ChubbyParser.Else_statementContext) -> None:
+        self.enter_scope()
         self.classes[self.current_class_name].append("else {")
         if ctx.statement():
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+        self.exit_scope()
 
     def visitFor_statement(self, ctx: ChubbyParser.For_statementContext) -> None:
+        self.enter_scope()
         for_variable = ctx.IDENTIFIER().getText()
+        self.add_to_current_scope(
+            for_variable, f"at line {ctx.start.line}, column {ctx.start.column}"
+        )
         expression_from = self.visit(ctx.expression(0))
         expression_to = self.visit(ctx.expression(1))
         expression_step = "1"
@@ -236,14 +290,17 @@ class ChubbyCompiler(ChubbyVisitor):
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+        self.exit_scope()
 
     def visitWhile_statement(self, ctx: ChubbyParser.While_statementContext) -> None:
+        self.enter_scope()
         expression = self.visit(ctx.expression())
         self.classes[self.current_class_name].append(f"while ({expression}) {{")
         if ctx.statement():
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+        self.exit_scope()
 
     def visitSimple_statement(self, ctx: ChubbyParser.Simple_statementContext) -> None:
         if ctx.local_variable_declaration():
@@ -266,6 +323,9 @@ class ChubbyCompiler(ChubbyVisitor):
         self, ctx: ChubbyParser.Local_variable_declarationContext
     ) -> None:
         variable_name = ctx.IDENTIFIER().getText()
+        self.add_to_current_scope(
+            variable_name, f"at line {ctx.start.line}, column {ctx.start.column}"
+        )
         variable_type = self.visit(ctx.type_specifier())
         array_suffix = ""
         if ctx.LEFT_SQUARE():
@@ -430,7 +490,9 @@ class ChubbyCompiler(ChubbyVisitor):
     def visitLiteral(self, ctx: ChubbyParser.LiteralContext) -> str:
         return ctx.getText()
 
-    def visitRegular_class_instantiation(self, ctx: ChubbyParser.Regular_class_instantiationContext) -> str:
+    def visitRegular_class_instantiation(
+        self, ctx: ChubbyParser.Regular_class_instantiationContext
+    ) -> str:
         base_name_str = ctx.class_name_for_new.text
 
         type_to_instantiate_chubby = base_name_str
@@ -463,7 +525,9 @@ class ChubbyCompiler(ChubbyVisitor):
 
         return f"new {java_type_to_instantiate_final}({arguments})"
 
-    def visitList_instantiation(self, ctx: ChubbyParser.List_instantiationContext) -> str:
+    def visitList_instantiation(
+        self, ctx: ChubbyParser.List_instantiationContext
+    ) -> str:
         element_type_str = self.visit(ctx.element_type_for_new_list)
 
         java_element_type = element_type_str
@@ -484,7 +548,6 @@ class ChubbyCompiler(ChubbyVisitor):
             self.class_imports.append("import java.util.List;")
 
         return f"new ArrayList<{java_element_type}>()"
-
 
     def visitArgument_list(self, ctx: ChubbyParser.Argument_listContext) -> str:
         argument_list = []
@@ -551,6 +614,9 @@ class ChubbyCompiler(ChubbyVisitor):
     def visitParameter(self, ctx: ChubbyParser.ParameterContext) -> str:
         param_type = self.visit(ctx.type_specifier())
         param_name = ctx.IDENTIFIER().getText()
+        self.add_to_current_scope(
+            param_name, f"at line {ctx.start.line}, column {ctx.start.column}"
+        )
         array_suffix = ""
         if ctx.LEFT_SQUARE():
             array_suffix = "[]" * len(ctx.LEFT_SQUARE())
@@ -575,18 +641,28 @@ class ChubbyCompiler(ChubbyVisitor):
         elif ctx.simple_identifier_type():
             return ctx.simple_identifier_type().IDENTIFIER().getText()
         else:
-            raise ChubbyCompilerError(f"Unknown structure in type_specifier: {ctx.getText()}")
+            raise ChubbyCompilerError(
+                f"Unknown structure in type_specifier: {ctx.getText()}"
+            )
 
     def visitPrimitive_type(self, ctx: ChubbyParser.Primitive_typeContext) -> str:
-        if ctx.BOOL(): return "boolean"
-        if ctx.INT(): return "int"
-        if ctx.DOUBLE(): return "double"
-        if ctx.CHAR(): return "char"
-        if ctx.STRING(): return "String"
-        if ctx.LONG(): return "long"
+        if ctx.BOOL():
+            return "boolean"
+        if ctx.INT():
+            return "int"
+        if ctx.DOUBLE():
+            return "double"
+        if ctx.CHAR():
+            return "char"
+        if ctx.STRING():
+            return "String"
+        if ctx.LONG():
+            return "long"
         return ""
 
-    def visitList_type_declaration(self, ctx: ChubbyParser.List_type_declarationContext) -> str:
+    def visitList_type_declaration(
+        self, ctx: ChubbyParser.List_type_declarationContext
+    ) -> str:
         if "import java.util.List;" not in self.class_imports:
             self.class_imports.append("import java.util.List;")
 
@@ -609,14 +685,16 @@ class ChubbyCompiler(ChubbyVisitor):
                 self.class_imports.append("import java.util.ArrayList;")
             return "List"
 
-    def visitGeneric_identifier_type(self, ctx: ChubbyParser.Generic_identifier_typeContext) -> str:
+    def visitGeneric_identifier_type(
+        self, ctx: ChubbyParser.Generic_identifier_typeContext
+    ) -> str:
         base_name = ctx.IDENTIFIER().getText()
         element_type_str = self.visit(ctx.type_arg_in_ident_decl)
 
         java_element_type = element_type_str
-        if element_type_str == "int": java_element_type = "Integer"
+        if element_type_str == "int":
+            java_element_type = "Integer"
         return f"{base_name}<{java_element_type}>"
-
 
     def visitLogical_operator(self, ctx: ChubbyParser.Logical_operatorContext) -> str:
         if ctx.OR():
@@ -689,3 +767,26 @@ class ChubbyCompiler(ChubbyVisitor):
             return "public"
         elif ctx.PRIVATE():
             return "private"
+
+    def enter_scope(self):
+        self.scope_stack.append(Scope())
+
+    def exit_scope(self):
+        if self.scope_stack:
+            self.scope_stack.pop()
+
+    def add_to_current_scope(self, name: str, info: str):
+        if not self.scope_stack:
+            raise ChubbyCompilerError("No current scope available to add variable")
+        for scope in reversed(self.scope_stack):
+            if scope.has_variable(name):
+                existing_info = scope.variables[name]
+                raise ChubbyCompilerError(
+                    f"Variable '{name}' already defined in an accessible scope. "
+                    f"Previously defined {existing_info}; current declaration {info}"
+                )
+
+    def delete_from_current_scope(self, name: str):
+        if not self.scope_stack:
+            raise ChubbyCompilerError("No current scope available to delete variable")
+        self.get_current_scope().delete_variable(name)
