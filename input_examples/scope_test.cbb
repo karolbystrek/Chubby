@@ -4,8 +4,10 @@ class KlasaTestowa
         for i in 0 .. limit do
             if i > 5 then
                 int x = i % 2;
+                int x = 6;
                 print(x);
             endif
         endfor
     endfunction
 endclass
+
