@@ -80,7 +80,6 @@ class JavaBytecodeCompiler:
                 )
 
                 if process.returncode == 0:
-                    self.compilation_logs.append(f"Successfully compiled {class_name}")
                     class_file_path = os.path.join(
                         self.output_dir, f"{class_name}.class"
                     )
