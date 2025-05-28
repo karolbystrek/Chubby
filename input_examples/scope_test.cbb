@@ -1,0 +1,11 @@
+class KlasaTestowa
+    function public static main(String[] args) : void
+        int limit = 10;
+        for i in 0 .. limit do
+            if i > 5 then
+                int x = i % 2;
+                print(x);
+            endif
+        endfor
+    endfunction
+endclass
