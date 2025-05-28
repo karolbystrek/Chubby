@@ -299,8 +299,8 @@ class ChubbyIDE:
         file_path = filedialog.askopenfilename(
             title="Select Chubby File",
             filetypes=(
-                ("Chubby Files", "*.cbb"),
                 ("Text Files", "*.txt"),
+                ("Chubby Files", "*.cbb"),
                 ("All Files", "*.*")
             )
         )
