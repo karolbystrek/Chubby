@@ -121,11 +121,11 @@ python Driver.py path/to/your/input_file.txt
 ## Example Usage (within the IDE)
 
 1. Start the Chubby IDE: `python ChubbyIDE.py`.
-2. Open an existing `.cbb` file (or `.txt` example from `input_examples/`) or paste your Chubby code into the editor. For instance, use the content of `input_examples/test.txt`.
+2. Click the "Load File" button to choose a Chubby source file (e.g., an existing `.cbb` file or a `.txt` example from `input_examples/`) to load its content into the editor. Alternatively, you can paste your Chubby code directly into the editor. For instance, you can load the content of `input_examples/test.txt`.
 3. If your program uses the `input()` function (like `test.txt`), enter the required input values in the "Program Input (one value per line)" panel. For `test.txt`, you would provide two integers, each on a new line.
 4. Click the "Compile & Run" button.
 5. Compilation logs will appear in the "Compilation Logs/Errors" panel, and the program's output will be displayed in the "Program Output" panel.
-
+   
 ---
 
 ## Project Structure
