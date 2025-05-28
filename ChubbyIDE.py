@@ -1,5 +1,5 @@
 import customtkinter
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import re
 from src.ChubbyCompiler import ChubbyCompiler
 
@@ -14,6 +14,10 @@ class ChubbyIDE:
     TEXTBOX_TEXT_COLOR = "#DCE4EE"
     BUTTON_COLOR = "#3A7EBF"
     BUTTON_HOVER_COLOR = "#326A9F"
+    LOAD_BUTTON_COLOR = "#007ACC"
+    LOAD_BUTTON_HOVER_COLOR = "#005C99"
+    CLEAR_BUTTON_COLOR = "#555555"
+    CLEAR_BUTTON_HOVER_COLOR = "#666666"
     LABEL_TEXT_COLOR = "#DCE4EE"
 
     SUCCESS_FG = "#39CC8F"
@@ -72,7 +76,7 @@ class ChubbyIDE:
 
     def __init__(self, master: customtkinter.CTk):
         self.master = master
-        master.title("Chubby GUI - Input Enabled & Syntax Highlighting")
+        master.title("Chubby IDE")
         master.geometry("1300x900")
 
         self.highlight_job_id = None
@@ -130,7 +134,6 @@ class ChubbyIDE:
             text_color=self.TEXTBOX_TEXT_COLOR, border_width=1, border_color="#333333")
         self.program_output.grid(row=1, column=0, padx=15, pady=(5, 10), sticky="nsew")
 
-
         self.input_label = customtkinter.CTkLabel(
             self.output_log_input_panel, text="Program Input (one value per line):",
             font=customtkinter.CTkFont(family=self.UI_FONT_FAMILY, size=self.UI_TITLE_FONT_SIZE, weight="bold"),
@@ -139,12 +142,8 @@ class ChubbyIDE:
         self.program_input_area = customtkinter.CTkTextbox(
             self.output_log_input_panel,
             font=customtkinter.CTkFont(family=self.LOG_FONT_FAMILY, size=self.INPUT_AREA_FONT_SIZE),
-            state="normal",
-            corner_radius=self.CORNER_RADIUS,
-            fg_color=self.TEXTBOX_COLOR,
-            text_color=self.TEXTBOX_TEXT_COLOR,
-            border_width=1,
-            border_color="#333333",
+            state="normal", corner_radius=self.CORNER_RADIUS, fg_color=self.TEXTBOX_COLOR,
+            text_color=self.TEXTBOX_TEXT_COLOR, border_width=1, border_color="#333333",
             height=70
         )
         self.program_input_area.grid(row=3, column=0, padx=15, pady=(5, 10), sticky="nsew")
@@ -163,22 +162,31 @@ class ChubbyIDE:
 
         self.button_panel = customtkinter.CTkFrame(master, corner_radius=self.CORNER_RADIUS, fg_color="transparent")
         self.button_panel.grid(row=1, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
+
         self.button_panel.grid_columnconfigure(0, weight=1)
         self.button_panel.grid_columnconfigure(1, weight=0)
         self.button_panel.grid_columnconfigure(2, weight=0)
-        self.button_panel.grid_columnconfigure(3, weight=1)
+        self.button_panel.grid_columnconfigure(3, weight=0)
+        self.button_panel.grid_columnconfigure(4, weight=1)
+
+        self.load_file_button = customtkinter.CTkButton(
+            self.button_panel, text="Load File", command=self.load_file_to_editor,
+            font=customtkinter.CTkFont(family=self.UI_FONT_FAMILY, size=self.UI_REGULAR_FONT_SIZE, weight="bold"),
+            corner_radius=self.CORNER_RADIUS, fg_color=self.LOAD_BUTTON_COLOR, hover_color=self.LOAD_BUTTON_HOVER_COLOR)
+        self.load_file_button.grid(row=0, column=1, padx=10, pady=10, ipady=5)
 
         self.compile_run_button = customtkinter.CTkButton(
             self.button_panel, text="Compile & Run", command=self.compile_and_run,
             font=customtkinter.CTkFont(family=self.UI_FONT_FAMILY, size=self.UI_REGULAR_FONT_SIZE, weight="bold"),
             corner_radius=self.CORNER_RADIUS, fg_color=self.BUTTON_COLOR, hover_color=self.BUTTON_HOVER_COLOR)
-        self.compile_run_button.grid(row=0, column=1, padx=10, pady=10, ipady=5)
+        self.compile_run_button.grid(row=0, column=2, padx=10, pady=10, ipady=5)
 
         self.clear_button = customtkinter.CTkButton(
             self.button_panel, text="Clear All", command=self.clear_fields,
             font=customtkinter.CTkFont(family=self.UI_FONT_FAMILY, size=self.UI_REGULAR_FONT_SIZE, weight="bold"),
-            corner_radius=self.CORNER_RADIUS, fg_color="#555555", hover_color="#666666")
-        self.clear_button.grid(row=0, column=2, padx=10, pady=10, ipady=5)
+            corner_radius=self.CORNER_RADIUS, fg_color=self.CLEAR_BUTTON_COLOR,
+            hover_color=self.CLEAR_BUTTON_HOVER_COLOR)
+        self.clear_button.grid(row=0, column=3, padx=10, pady=10, ipady=5)
 
         self.compiler = ChubbyCompiler()
         self.master.after(100, self.apply_highlighting)
@@ -221,6 +229,7 @@ class ChubbyIDE:
         operator_symbol_combined_pattern_str = f"(?:(?:{ops_sym_multi_str})|(?:{ops_sym_single_str}))"
         punct_str = "|".join(re.escape(p) for p in self.PUNCTUATION_SYMBOLS)
         punctuation_combined_pattern_str = f"(?:{punct_str})"
+
         patterns_for_tok_regex = [
             ('comment', comment_pattern_str),
             ('string_literal', string_literal_combined_pattern_str),
@@ -235,6 +244,7 @@ class ChubbyIDE:
             ('punctuation', punctuation_combined_pattern_str),
         ]
         tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in patterns_for_tok_regex)
+
         try:
             for mo in re.finditer(tok_regex, text_content, re.MULTILINE):
                 kind = mo.lastgroup
@@ -249,6 +259,7 @@ class ChubbyIDE:
         except Exception as e:
             print(f"!!! Error during highlighting: {e}")
             return
+
         if self.code_editor.winfo_exists():
             try:
                 self.code_editor.mark_set(customtkinter.INSERT, cursor_pos)
@@ -274,6 +285,7 @@ class ChubbyIDE:
                 widget.insert("end", content)
                 widget.configure(state="disabled")
                 return
+
             widget.insert("end", content, tag_name)
         else:
             current_default_text_color = widget.cget("text_color")
@@ -283,13 +295,42 @@ class ChubbyIDE:
 
         widget.configure(state="disabled")
 
+    def load_file_to_editor(self):
+        file_path = filedialog.askopenfilename(
+            title="Select Chubby File",
+            filetypes=(
+                ("Chubby Files", "*.cbb"),
+                ("Text Files", "*.txt"),
+                ("All Files", "*.*")
+            )
+        )
+
+        if not file_path:
+            return
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+
+            self.code_editor.delete("1.0", "end")
+            self.code_editor.insert("1.0", content)
+            self.apply_highlighting()
+
+            self.update_text_widget(self.compilation_logs, f"Successfully loaded file: {file_path}", self.INFO_FG)
+
+        except FileNotFoundError:
+            messagebox.showerror("File Error", f"File not found: {file_path}")
+            self.update_text_widget(self.compilation_logs, f"Error: File not found {file_path}", self.ERROR_FG)
+        except Exception as e:
+            messagebox.showerror("Loading Error", f"An error occurred while loading the file: {e}")
+            self.update_text_widget(self.compilation_logs, f"Error loading file: {e}", self.ERROR_FG)
+
     def compile_and_run(self):
         code = self.code_editor.get("1.0", "end-1c").strip()
-        user_input_string = self.program_input_area.get("1.0",
-                                                        "end-1c").strip()
+        user_input_string = self.program_input_area.get("1.0", "end-1c").strip()
 
         if not code:
-            messagebox.showwarning("Input Error", "Please enter some ChubbyPython code to compile.")
+            messagebox.showwarning("No Code", "Please enter Chubby code to compile.")
             self.update_text_widget(self.compilation_logs, "No code entered.", self.WARNING_FG)
             self.update_text_widget(self.program_output, "", self.TEXTBOX_TEXT_COLOR)
             return
@@ -300,12 +341,15 @@ class ChubbyIDE:
 
         success, stdout_output, error_logs = self.compiler.compile(code, ide_input=user_input_string)
 
-        self.update_text_widget(self.program_output, stdout_output, self.TEXTBOX_TEXT_COLOR)
+        self.update_text_widget(self.program_output, stdout_output if stdout_output else "No output data.",
+                                self.TEXTBOX_TEXT_COLOR)
         if success:
-            self.update_text_widget(self.compilation_logs, "Compilation and execution successful!\n" + error_logs,
-                                    self.SUCCESS_FG)
+            log_message = "Compilation and execution successful."
+            if error_logs and error_logs.strip():
+                log_message += "\nJava Compilation Logs:\n" + error_logs
+            self.update_text_widget(self.compilation_logs, log_message, self.SUCCESS_FG)
         else:
-            self.update_text_widget(self.compilation_logs, "Compilation or execution failed!\n" + error_logs,
+            self.update_text_widget(self.compilation_logs, "Compilation or execution failed.\n" + error_logs,
                                     self.ERROR_FG)
 
     def clear_fields(self):
