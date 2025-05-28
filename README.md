@@ -58,7 +58,7 @@ Chubby language supports a range of modern programming constructs:
 * **Static Typing**: Type declarations for variables, parameters, and function return values.
 * **Primitive Data Types**: `int`, `double`, `long`, `bool`, `char`, `string`, and `void`.
 * **Generic `List` Type**: A built-in generic list type (`List<Type>`), which is mapped to `java.util.ArrayList` during compilation.
-* **Arrays**: Support for single-dimensional arrays, including declaration and initialization (e.g., `new int[10]` or `int[] a = {1, 2, 3}`).
+* **Arrays**: Support for single and multi-dimensional arrays, including declaration and initialization (e.g., `new int[10]` or `int[] a = {1, 2, 3}`).
 * **Input/Output**: `print(...)` statement for displaying output and `input(type)` function for reading user input.
 * **Control Flow Structures**: `if-then-elsif-else-endif`, `for-in-range-do-endfor`, and `while-do-endwhile`.
 * **Comments**: Single-line comments starting with `#`.
