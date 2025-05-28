@@ -1,6 +1,6 @@
 # Chubby - Own Programming Language
 
-An object-oriented programming language with its own compiler and Integrated Development Environment (IDE), developed for the *Compiler Theory and Compilers* university course. This project has transitioned from an initial Java-based implementation to a fully Python-based toolset.
+An object-oriented programming language with its own compiler and Integrated Development Environment (IDE), developed for the *Compiler Theory and Compilers* university course. Chybby is designed as an accessible tool for individuals learning fundamental programming concepts.
 
 ---
 
