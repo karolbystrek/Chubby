@@ -73,6 +73,10 @@ Chubby language supports a range of modern programming constructs:
 **Figure 2:** Example of a Chubby program running in the IDE, showing the code editor, input area, and output panel.
 ![Example Running](photos/gui_example_run.png)
 
+**Figure 3:** Example of an error message displayed in the IDE (e.g., for a semantic error like a variable being already defined).
+![IDE Error Example](photos/gui_error_already_defined.png)
+
+
 ---
 
 ## Tools, Dependencies, and System Requirements
