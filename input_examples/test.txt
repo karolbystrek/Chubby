@@ -1,0 +1,36 @@
+class public klasa
+
+    function public static main(string[] args) : void
+        int x = input(int);
+        int y = input(int);
+        List lista = new List(int);
+        lista.add(5);
+        lista.add(8);
+        lista.add(3);
+        print(lista);
+        lista.remove(1);
+        print(lista);
+        print(lista.size());
+        Coordinates coordinates = new Coordinates(x, y);
+        print("x: " + coordinates.getX());
+        print("y: " + coordinates.getY());
+    endfunction
+endclass
+
+class public Coordinates
+    private const int x;
+    private const int y;
+
+    constructor public Coordinates(int x, int y)
+        this.x = x;
+        this.y = y;
+    endconstructor
+
+    function public getX() : int
+        return this.x;
+    endfunction
+
+    function public getY() : int
+        return this.y;
+    endfunction
+endclass

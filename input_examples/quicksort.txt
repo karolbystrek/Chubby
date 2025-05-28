@@ -1,0 +1,43 @@
+class public QuickSortAlgorithm
+    function public partition(int[] arr, int low, int high) : int
+        int pivot = arr[high];
+        int i = low - 1;
+        int j = low;
+
+        while j < high do
+            if arr[j] < pivot then
+                i = i + 1;
+                int temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            endif
+            j = j + 1;
+        endwhile
+
+        int temp_swap_pivot = arr[i+1];
+        arr[i+1] = arr[high];
+        arr[high] = temp_swap_pivot;
+
+        return i + 1;
+    endfunction
+
+    function public quicksort(int[] arr, int low, int high): void
+        if low < high then
+            int pi;
+            pi = partition(arr, low, high);
+
+            quicksort(arr, low, pi - 1);
+            quicksort(arr, pi + 1, high);
+        endif
+    endfunction
+
+    function public static main(String[] args) : void
+        int[] a = {10, 7, 8, 9, 1, 5};
+        int n = a.length;
+        QuickSortAlgorithm o = new QuickSortAlgorithm();
+        o.quicksort(a, 0, n-1);
+        for i in 0 .. n do
+            print(a[i]);
+        endfor
+    endfunction
+endclass
