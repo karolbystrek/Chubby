@@ -16,6 +16,8 @@ class ChubbyIDE:
     BUTTON_HOVER_COLOR = "#326A9F"
     LOAD_BUTTON_COLOR = "#007ACC"
     LOAD_BUTTON_HOVER_COLOR = "#005C99"
+    SAVE_BUTTON_COLOR = "#007ACC"
+    SAVE_BUTTON_HOVER_COLOR = "#007A44"
     CLEAR_BUTTON_COLOR = "#555555"
     CLEAR_BUTTON_HOVER_COLOR = "#666666"
     LABEL_TEXT_COLOR = "#DCE4EE"
@@ -244,7 +246,9 @@ class ChubbyIDE:
         self.button_panel.grid_columnconfigure(1, weight=0)
         self.button_panel.grid_columnconfigure(2, weight=0)
         self.button_panel.grid_columnconfigure(3, weight=0)
-        self.button_panel.grid_columnconfigure(4, weight=1)
+        self.button_panel.grid_columnconfigure(4, weight=0)
+        self.button_panel.grid_columnconfigure(5, weight=1)
+
 
         self.load_file_button = customtkinter.CTkButton(
             self.button_panel,
@@ -259,7 +263,22 @@ class ChubbyIDE:
             fg_color=self.LOAD_BUTTON_COLOR,
             hover_color=self.LOAD_BUTTON_HOVER_COLOR,
         )
-        self.load_file_button.grid(row=0, column=1, padx=10, pady=10, ipady=5)
+        self.load_file_button.grid(row=0, column=1, padx=5, pady=10, ipady=5)
+
+        self.save_file_button = customtkinter.CTkButton(
+            self.button_panel,
+            text="Save File",
+            command=self.save_file_from_editor,
+            font=customtkinter.CTkFont(
+                family=self.UI_FONT_FAMILY,
+                size=self.UI_REGULAR_FONT_SIZE,
+                weight="bold",
+            ),
+            corner_radius=self.CORNER_RADIUS,
+            fg_color=self.SAVE_BUTTON_COLOR,
+            hover_color=self.SAVE_BUTTON_HOVER_COLOR,
+        )
+        self.save_file_button.grid(row=0, column=2, padx=5, pady=10, ipady=5)
 
         self.compile_run_button = customtkinter.CTkButton(
             self.button_panel,
@@ -274,7 +293,7 @@ class ChubbyIDE:
             fg_color=self.BUTTON_COLOR,
             hover_color=self.BUTTON_HOVER_COLOR,
         )
-        self.compile_run_button.grid(row=0, column=2, padx=10, pady=10, ipady=5)
+        self.compile_run_button.grid(row=0, column=3, padx=5, pady=10, ipady=5)
 
         self.clear_button = customtkinter.CTkButton(
             self.button_panel,
@@ -289,7 +308,7 @@ class ChubbyIDE:
             fg_color=self.CLEAR_BUTTON_COLOR,
             hover_color=self.CLEAR_BUTTON_HOVER_COLOR,
         )
-        self.clear_button.grid(row=0, column=3, padx=10, pady=10, ipady=5)
+        self.clear_button.grid(row=0, column=4, padx=5, pady=10, ipady=5)
 
         self.compiler = ChubbyCompiler()
         self.master.after(100, self.apply_highlighting)
@@ -430,8 +449,8 @@ class ChubbyIDE:
         file_path = filedialog.askopenfilename(
             title="Select Chubby File",
             filetypes=(
-                ("Text Files", "*.txt"),
                 ("Chubby Files", "*.cbb"),
+                ("Text Files", "*.txt"),
                 ("All Files", "*.*"),
             ),
         )
@@ -466,6 +485,41 @@ class ChubbyIDE:
             )
             self.update_text_widget(
                 self.compilation_logs, f"Error loading file: {e}", self.ERROR_FG
+            )
+
+    def save_file_from_editor(self):
+        code_content = self.code_editor.get("1.0", "end-1c")
+        if not code_content.strip():
+            messagebox.showwarning("Empty Content", "There is no code to save.")
+            return
+
+        file_path = filedialog.asksaveasfilename(
+            title="Save Chubby File As",
+            defaultextension=".cbb",
+            filetypes=(
+                ("Chubby Files", "*.cbb"),
+                ("Text Files", "*.txt"),
+                ("All Files", "*.*"),
+            ),
+        )
+
+        if not file_path:
+            return
+
+        try:
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(code_content)
+            self.update_text_widget(
+                self.compilation_logs,
+                f"Successfully saved file: {file_path}",
+                self.SUCCESS_FG,
+            )
+        except Exception as e:
+            messagebox.showerror(
+                "Saving Error", f"An error occurred while saving the file: {e}"
+            )
+            self.update_text_widget(
+                self.compilation_logs, f"Error saving file: {e}", self.ERROR_FG
             )
 
     def compile_and_run(self):

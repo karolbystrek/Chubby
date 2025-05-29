@@ -1,0 +1,6 @@
+class KlasaTestowaDoZapisania
+    function public static main(String[] args) : void
+        int x = 5;
+        print(5);
+    endfunction
+endclass
