@@ -17,7 +17,7 @@ An object-oriented programming language with its own compiler and Integrated Dev
 The primary goal of the Chubby project is to design and implement a custom, object-oriented programming language. This project is part of the *Compiler Theory and Compilers* (Teoria Kompilacji i Kompilatory) university course. The process involves defining the language's syntax and semantics, creating grammar, developing a compiler, and exploring key concepts in compilation theory such as lexical analysis, parsing, intermediate code generation, and error handling.
 
 ### 2. Translator Type
-* **Compiler** 
+* **Translator** 
 
 ### 3. Program Output
 The Chubby compiler transforms Chubby source code files into **Java source code**. This generated Java code is then automatically compiled into **JVM bytecode** (`.class` files) and executed. The program's output (e.g., from `print` statements) and any compilation or execution errors are displayed within the IDE's designated panels or on the standard output if using the command-line interface.
