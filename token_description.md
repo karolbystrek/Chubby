@@ -74,10 +74,10 @@
 | `DOT`              | `'.'`                                                                                                                  | Dot separator '.' (member access)       |
 | `COLON`            | `':'`                                                                                                                  | Colon separator ':'                     |
 | `LONG_LITERAL`     | ``[0-9]+ [lL]``                                                                                                        | Long integer literal (e.g., `123L`)     |
-| `DOUBLE_LITERAL`   | ``([0-9]+ '.' [0-9]* | '.' [0-9]+) ([eE] [+\-]? [0-9]+)? [dD]? | [0-9]+ [eE] [+\-]? [0-9]+ [dD]? | [0-9]+ [dD]`` | Double literal (e.g., `1.2d`, `1e2D`) |
+| `DOUBLE_LITERAL`   | ``([0-9]+ '.' [0-9]* \| '.' [0-9]+) ([eE] [+\-]? [0-9]+)? [dD]? \| [0-9]+ [eE] [+\-]? [0-9]+ [dD]? \| [0-9]+ [dD]`` | Double literal (e.g., `1.2d`, `1e2D`) |
 | `INTEGER_LITERAL`  | ``[0-9]+``                                                                                                             | Integer literal (e.g., `123`)           |
-| `CHAR_LITERAL`     | ``'\'' ( '\\' [nt\\'"] | ~['\\]) '\''``                                                                               | Character literal (e.g., `'a'`)         |
-| `STRING_LITERAL`   | ``'"' ( ~["\\] | '\\' . )* '"'``                                                                                       | String literal (e.g., `"hello"`)        |
+| `CHAR_LITERAL`     | ``'\'' ( '\\' [nt\\'"] \| ~['\\]) '\''``                                                                               | Character literal (e.g., `'a'`)         |
+| `STRING_LITERAL`   | ``'"' ( ~["\\] \| '\\' . )* '"'``                                                                                       | String literal (e.g., `"hello"`)        |
 | `IDENTIFIER`       | ``[a-zA-Z_][a-zA-Z0-9_]*``                                                                                              | Identifier (variable, class name, etc.) |
 | `LINE_COMMENT`     | ``'#' ~[\r\n]* -> skip``                                                                                               | Single-line comment (ignored)           |
 | `WS`               | ``[ \t\r\n]+ -> skip``                                                                                                 | Whitespace (ignored)                    |
