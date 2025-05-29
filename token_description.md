@@ -28,7 +28,6 @@
 | `PRIVATE`          | `'private'`                                                                                                            | Keyword 'private'                       |
 | `CONST`            | `'const'`                                                                                                              | Keyword 'const'                         |
 | `STATIC`           | `'static'`                                                                                                             | Keyword 'static'                        |
-| `OVERRIDE`         | `'override'`                                                                                                           | Keyword 'override'                      |
 | `NEW`              | `'new'`                                                                                                                | Keyword 'new'                           |
 | `THIS`             | `'this'`                                                                                                               | Keyword 'this'                          |
 | `VOID`             | `'void'`                                                                                                               | Keyword 'void'                          |
