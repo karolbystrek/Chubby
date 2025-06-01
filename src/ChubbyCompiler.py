@@ -55,6 +55,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.has_main_method = False
         self.class_imports = []
         self.scope_stack = []
+        self.loop_stack = []  # Track nested loop contexts for break/continue validation
 
     def compile(self, chubby_code: str, ide_input: str = None) -> tuple[bool, str, str]:
         """
@@ -73,6 +74,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.has_main_method = False
         self.class_imports = []
         self.scope_stack = []
+        self.loop_stack = []  # Reset loop stack for each compilation
 
         try:
             input_stream = InputStream(chubby_code)
@@ -274,6 +276,8 @@ class ChubbyCompiler(ChubbyVisitor):
 
     def visitFor_statement(self, ctx: ChubbyParser.For_statementContext) -> None:
         self.enter_scope()
+        self.enter_loop_context("for", ctx.start.line, ctx.start.column)
+
         for_variable = ctx.IDENTIFIER().getText()
         self.add_to_current_scope(
             for_variable, f"at line {ctx.start.line}, column {ctx.start.column}"
@@ -290,16 +294,22 @@ class ChubbyCompiler(ChubbyVisitor):
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+
+        self.exit_loop_context()
         self.exit_scope()
 
     def visitWhile_statement(self, ctx: ChubbyParser.While_statementContext) -> None:
         self.enter_scope()
+        self.enter_loop_context("while", ctx.start.line, ctx.start.column)
+
         expression = self.visit(ctx.expression())
         self.classes[self.current_class_name].append(f"while ({expression}) {{")
         if ctx.statement():
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+
+        self.exit_loop_context()
         self.exit_scope()
 
     def visitSimple_statement(self, ctx: ChubbyParser.Simple_statementContext) -> None:
@@ -368,11 +378,15 @@ class ChubbyCompiler(ChubbyVisitor):
         self.classes[self.current_class_name].append(f"return {expression};")
 
     def visitBreak_statement(self, ctx: ChubbyParser.Break_statementContext) -> None:
+        self.validate_break_continue_context("break", ctx.start.line, ctx.start.column)
         self.classes[self.current_class_name].append("break;")
 
     def visitContinue_statement(
         self, ctx: ChubbyParser.Continue_statementContext
     ) -> None:
+        self.validate_break_continue_context(
+            "continue", ctx.start.line, ctx.start.column
+        )
         self.classes[self.current_class_name].append("continue;")
 
     def visitPrint_statement(self, ctx: ChubbyParser.Print_statementContext) -> None:
@@ -790,3 +804,44 @@ class ChubbyCompiler(ChubbyVisitor):
         if not self.scope_stack:
             raise ChubbyCompilerError("No current scope available to delete variable")
         self.get_current_scope().delete_variable(name)
+
+    def enter_loop_context(self, loop_type: str, line: int, column: int):
+        """
+        Enter a loop context for break/continue validation.
+
+        Args:
+            loop_type: Type of loop ('for' or 'while')
+            line: Line number where the loop starts
+            column: Column number where the loop starts
+        """
+        self.loop_stack.append({"type": loop_type, "line": line, "column": column})
+
+    def exit_loop_context(self):
+        """Exit the current loop context."""
+        if self.loop_stack:
+            self.loop_stack.pop()
+
+    def is_inside_loop(self) -> bool:
+        """Check if we are currently inside any loop context."""
+        return len(self.loop_stack) > 0
+
+    def validate_break_continue_context(
+        self, statement_type: str, line: int, column: int
+    ):
+        """
+        Validate that break/continue statements are used only inside loops.
+
+        Args:
+            statement_type: 'break' or 'continue'
+            line: Line number of the statement
+            column: Column number of the statement
+
+        Raises:
+            ChubbyCompilerError: If break/continue is used outside a loop
+        """
+        if not self.is_inside_loop():
+            keyword = "stop" if statement_type == "break" else "next"
+            raise ChubbyCompilerError(
+                f"'{keyword}' statement at line {line}, column {column} is not allowed outside of a loop. "
+                f"'{keyword}' statements can only be used inside 'for' or 'while' loops."
+            )

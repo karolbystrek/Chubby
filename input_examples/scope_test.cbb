@@ -1,13 +1,11 @@
 class KlasaTestowa
     function public static main(String[] args) : void
-        int limit = 10;
-        for i in 0 .. limit do
-            if i > 5 then
-                int x = i % 2;
-                int x = 6;
-                print(x);
-            endif
+        for i in 0 .. 10 by 1 do
+            for j in 0 .. 2 do
+                print(i);
+                print(j);
+                stop;
+            endfor
         endfor
     endfunction
 endclass
-
