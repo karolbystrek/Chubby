@@ -806,39 +806,18 @@ class ChubbyCompiler(ChubbyVisitor):
         self.get_current_scope().delete_variable(name)
 
     def enter_loop_context(self, loop_type: str, line: int, column: int):
-        """
-        Enter a loop context for break/continue validation.
-
-        Args:
-            loop_type: Type of loop ('for' or 'while')
-            line: Line number where the loop starts
-            column: Column number where the loop starts
-        """
         self.loop_stack.append({"type": loop_type, "line": line, "column": column})
 
     def exit_loop_context(self):
-        """Exit the current loop context."""
         if self.loop_stack:
             self.loop_stack.pop()
 
     def is_inside_loop(self) -> bool:
-        """Check if we are currently inside any loop context."""
         return len(self.loop_stack) > 0
 
     def validate_break_continue_context(
         self, statement_type: str, line: int, column: int
     ):
-        """
-        Validate that break/continue statements are used only inside loops.
-
-        Args:
-            statement_type: 'break' or 'continue'
-            line: Line number of the statement
-            column: Column number of the statement
-
-        Raises:
-            ChubbyCompilerError: If break/continue is used outside a loop
-        """
         if not self.is_inside_loop():
             keyword = "stop" if statement_type == "break" else "next"
             raise ChubbyCompilerError(
