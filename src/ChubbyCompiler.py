@@ -59,6 +59,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.class_imports = []
         self.scope_stack = []
         self.loop_stack = []
+        self.functions = {}
 
     def get_literal_type(self, literal_ctx) -> str:
         literal_text = literal_ctx.getText()
@@ -314,6 +315,27 @@ class ChubbyCompiler(ChubbyVisitor):
             if self.has_main_method:
                 raise ChubbyCompilerError("Multiple main methods defined")
             self.has_main_method = True
+
+        parameter_count = 0
+        if ctx.parameter_list():
+            parameter_count = len(ctx.parameter_list().parameter())
+
+        function_key = f"{self.current_class_name}.{function_name}"
+        if function_key in self.functions:
+            existing_func = self.functions[function_key]
+            raise ChubbyCompilerError(
+                f"Function '{function_name}' already defined in class '{self.current_class_name}'. "
+                f"Previously defined {existing_func['position']}"
+            )
+
+        self.functions[function_key] = {
+            "name": function_name,
+            "class": self.current_class_name,
+            "parameter_count": parameter_count,
+            "position": f"at line {ctx.start.line}, column {ctx.start.column}",
+            "is_static": bool(ctx.STATIC()),
+        }
+
         parameters = ""
         return_type = self.visit(ctx.return_type())
         if ctx.parameter_list():
@@ -641,8 +663,33 @@ class ChubbyCompiler(ChubbyVisitor):
     ) -> str:
         primary_expression = self.visit(ctx.primary_expression())
         suffix_str = ""
+
         if ctx.suffix():
-            for suffix in ctx.suffix():
+            for i, suffix in enumerate(ctx.suffix()):
+                if suffix.function_call_suffix():
+                    function_name = None
+
+                    if ctx.primary_expression().IDENTIFIER() and i == 0:
+                        function_name = ctx.primary_expression().IDENTIFIER().getText()
+                    elif i > 0 and ctx.suffix(i - 1).member_access_suffix():
+                        function_name = (
+                            ctx.suffix(i - 1)
+                            .member_access_suffix()
+                            .IDENTIFIER()
+                            .getText()
+                        )
+
+                    if function_name:
+                        argument_count = self.get_argument_count_from_context(
+                            suffix.function_call_suffix().argument_list()
+                        )
+                        self.validate_function_call(
+                            function_name,
+                            argument_count,
+                            suffix.start.line,
+                            suffix.start.column,
+                        )
+
                 suffix_str += self.visit(suffix)
         return f"{primary_expression}{suffix_str}"
 
@@ -1030,3 +1077,38 @@ class ChubbyCompiler(ChubbyVisitor):
                 f"'{keyword}' statement at line {line}, column {column} is not allowed outside of a loop. "
                 f"'{keyword}' statements can only be used inside 'for' or 'while' loops."
             )
+
+    def validate_function_call(
+        self, function_name: str, argument_count: int, line: int, column: int
+    ):
+        function_found = False
+        matching_function = None
+
+        function_key = f"{self.current_class_name}.{function_name}"
+        if function_key in self.functions:
+            function_found = True
+            matching_function = self.functions[function_key]
+        else:
+            for key, func_info in self.functions.items():
+                if func_info["name"] == function_name and func_info["is_static"]:
+                    function_found = True
+                    matching_function = func_info
+                    break
+
+        if not function_found:
+            raise ChubbyCompilerError(
+                f"Function '{function_name}' is not defined at line {line}, column {column}"
+            )
+
+        expected_params = matching_function["parameter_count"]
+        if argument_count != expected_params:
+            raise ChubbyCompilerError(
+                f"Function '{function_name}' expects {expected_params} argument(s), "
+                f"but {argument_count} were provided at line {line}, column {column}. "
+                f"Function defined {matching_function['position']}"
+            )
+
+    def get_argument_count_from_context(self, argument_list_ctx):
+        if not argument_list_ctx:
+            return 0
+        return len(argument_list_ctx.expression())

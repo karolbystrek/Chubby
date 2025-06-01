@@ -1,0 +1,25 @@
+class public FunctionCallTest
+
+    function public static testFunction(int a, string b) : void
+        print("Test function called");
+    endfunction
+
+    function public static add(int x, int y) : int
+        return x + y;
+    endfunction
+
+    function public static main(string[] args) : void
+        testFunction(5, "hello");
+
+        int result = add(3, 4);
+        print(result);
+
+        undefinedFunction();
+
+        testFunction(5);
+
+        add(1, 2, 3);
+
+        print("Program executed");
+    endfunction
+endclass
