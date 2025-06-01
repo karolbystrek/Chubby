@@ -1,0 +1,21 @@
+class public TestTypeErrors
+
+    function public static main(string[] args) : void
+        # These should be valid (allowed conversions)
+        long bigNumber = 123;    # OK: int to long
+        double realNumber = 456; # OK: int to double
+        double bigReal = 789L;   # OK: long to double
+
+        # Direct assignments that should work
+        int validInt = 100;
+        string validString = "hello";
+        bool validBool = true;
+        char validChar = 'a';
+        double validDouble = 3.14;
+        long validLong = 123L;
+
+        validInt = 100.0; # ERROR: double to int
+
+        print("Program executed");
+    endfunction
+endclass

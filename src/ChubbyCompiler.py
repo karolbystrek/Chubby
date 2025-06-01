@@ -29,12 +29,15 @@ class Scope:
     def __init__(self):
         self.variables = {}
 
-    def add_variable(self, name, info):
+    def add_variable(self, name, variable_info):
         if name in self.variables:
             raise ChubbyCompilerError(
-                f"Variable '{name}' already defined in this scope {info}"
+                f"Variable '{name}' already defined in this scope {variable_info.get('position', '')}"
             )
-        self.variables[name] = info
+        self.variables[name] = variable_info
+
+    def get_variable(self, name):
+        return self.variables.get(name)
 
     def delete_variable(self, name):
         if name in self.variables:
@@ -55,7 +58,133 @@ class ChubbyCompiler(ChubbyVisitor):
         self.has_main_method = False
         self.class_imports = []
         self.scope_stack = []
-        self.loop_stack = []  # Track nested loop contexts for break/continue validation
+        self.loop_stack = []
+
+    def get_literal_type(self, literal_ctx) -> str:
+        literal_text = literal_ctx.getText()
+
+        if literal_ctx.INTEGER_LITERAL():
+            return "int"
+        elif literal_ctx.LONG_LITERAL():
+            return "long"
+        elif literal_ctx.DOUBLE_LITERAL():
+            return "double"
+        elif literal_ctx.CHAR_LITERAL():
+            return "char"
+        elif literal_ctx.STRING_LITERAL():
+            return "string"
+        elif literal_ctx.TRUE() or literal_ctx.FALSE():
+            return "bool"
+        elif literal_ctx.NULL():
+            return "null"
+        else:
+            raise ChubbyCompilerError(f"Unknown literal type: {literal_text}")
+
+    def normalize_type_name(self, type_name: str) -> str:
+        type_mapping = {
+            "boolean": "bool",
+            "String": "string",
+            "Integer": "int",
+            "Double": "double",
+            "Long": "long",
+            "Character": "char",
+        }
+        return type_mapping.get(type_name, type_name)
+
+    def is_compatible_assignment(self, declared_type: str, literal_type: str) -> bool:
+        declared_type = self.normalize_type_name(declared_type)
+        literal_type = self.normalize_type_name(literal_type)
+
+        if literal_type == "null":
+            return declared_type not in ["int", "long", "double", "char", "bool"]
+
+        if declared_type == literal_type:
+            return True
+
+        if declared_type == "long" and literal_type == "int":
+            return True
+        if declared_type == "double" and literal_type in ["int", "long"]:
+            return True
+        return False
+
+    def validate_assignment_types(
+        self,
+        variable_type: str,
+        expression_ctx,
+        variable_name: str,
+        line: int,
+        column: int,
+    ):
+        literal_ctx = self._extract_literal_from_expression(expression_ctx)
+
+        if literal_ctx:
+            literal_type = self.get_literal_type(literal_ctx)
+
+            if not self.is_compatible_assignment(variable_type, literal_type):
+                raise ChubbyCompilerError(
+                    f"Type mismatch at line {line}, column {column}: "
+                    f"Cannot assign {literal_type} literal to variable '{variable_name}' of type {variable_type}. "
+                    f"Expected {variable_type}, but got {literal_type}."
+                )
+
+    def _extract_literal_from_expression(self, expression_ctx):
+        if not expression_ctx:
+            return None
+
+        if hasattr(expression_ctx, "literal") and expression_ctx.literal():
+            return expression_ctx.literal()
+
+        current = expression_ctx
+
+        if hasattr(current, "logical_expression") and current.logical_expression():
+            current = current.logical_expression()
+            if (
+                hasattr(current, "equality_expression")
+                and current.equality_expression()
+                and len(current.equality_expression()) == 1
+            ):
+                current = current.equality_expression(0)
+                if (
+                    hasattr(current, "relational_expression")
+                    and current.relational_expression()
+                    and len(current.relational_expression()) == 1
+                ):
+                    current = current.relational_expression(0)
+                    if (
+                        hasattr(current, "additive_expression")
+                        and current.additive_expression()
+                        and len(current.additive_expression()) == 1
+                    ):
+                        current = current.additive_expression(0)
+                        if (
+                            hasattr(current, "multiplicative_expression")
+                            and current.multiplicative_expression()
+                            and len(current.multiplicative_expression()) == 1
+                        ):
+                            current = current.multiplicative_expression(0)
+                            if (
+                                hasattr(current, "unary_expression")
+                                and current.unary_expression()
+                                and len(current.unary_expression()) == 1
+                            ):
+                                current = current.unary_expression(0)
+                                if (
+                                    hasattr(current, "postfix_expression")
+                                    and current.postfix_expression()
+                                ):
+                                    current = current.postfix_expression()
+                                    if (
+                                        hasattr(current, "primary_expression")
+                                        and current.primary_expression()
+                                    ):
+                                        current = current.primary_expression()
+                                        if (
+                                            hasattr(current, "literal")
+                                            and current.literal()
+                                        ):
+                                            return current.literal()
+
+        return None
 
     def compile(self, chubby_code: str, ide_input: str = None) -> tuple[bool, str, str]:
         """
@@ -74,7 +203,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.has_main_method = False
         self.class_imports = []
         self.scope_stack = []
-        self.loop_stack = []  # Reset loop stack for each compilation
+        self.loop_stack = []
 
         try:
             input_stream = InputStream(chubby_code)
@@ -202,9 +331,16 @@ class ChubbyCompiler(ChubbyVisitor):
         self, ctx: ChubbyParser.Variable_definitionContext
     ) -> None:
         variable_name = ctx.IDENTIFIER().getText()
+        variable_type = self.visit(ctx.type_specifier())
+        is_array = bool(ctx.LEFT_SQUARE())
+
         self.add_to_current_scope(
-            variable_name, f"at line {ctx.start.line}, column {ctx.start.column}"
+            variable_name,
+            f"at line {ctx.start.line}, column {ctx.start.column}",
+            variable_type,
+            is_array,
         )
+
         visibility = ""
         if ctx.visibility_modifier():
             visibility = self.visit(ctx.visibility_modifier()) + " "
@@ -214,13 +350,22 @@ class ChubbyCompiler(ChubbyVisitor):
         final = ""
         if ctx.CONST():
             final = "final "
-        variable_type = self.visit(ctx.type_specifier())
+
         array_suffix = ""
         if ctx.LEFT_SQUARE():
             array_suffix = "[]" * len(ctx.LEFT_SQUARE())
+
         expression = ""
         if ctx.expression():
+            self.validate_assignment_types(
+                variable_type + array_suffix,
+                ctx.expression(),
+                variable_name,
+                ctx.start.line,
+                ctx.start.column,
+            )
             expression = " = " + self.visit(ctx.expression())
+
         self.classes[self.current_class_name].append(
             f"{visibility}{static}{final}{variable_type}{array_suffix} {variable_name}{expression};"
         )
@@ -280,7 +425,9 @@ class ChubbyCompiler(ChubbyVisitor):
 
         for_variable = ctx.IDENTIFIER().getText()
         self.add_to_current_scope(
-            for_variable, f"at line {ctx.start.line}, column {ctx.start.column}"
+            for_variable,
+            f"at line {ctx.start.line}, column {ctx.start.column}",
+            "int",  # for loop variables are always int
         )
         expression_from = self.visit(ctx.expression(0))
         expression_to = self.visit(ctx.expression(1))
@@ -333,16 +480,31 @@ class ChubbyCompiler(ChubbyVisitor):
         self, ctx: ChubbyParser.Local_variable_declarationContext
     ) -> None:
         variable_name = ctx.IDENTIFIER().getText()
-        self.add_to_current_scope(
-            variable_name, f"at line {ctx.start.line}, column {ctx.start.column}"
-        )
         variable_type = self.visit(ctx.type_specifier())
+        is_array = bool(ctx.LEFT_SQUARE())
+
+        self.add_to_current_scope(
+            variable_name,
+            f"at line {ctx.start.line}, column {ctx.start.column}",
+            variable_type,
+            is_array,
+        )
+
         array_suffix = ""
         if ctx.LEFT_SQUARE():
             array_suffix = "[]" * len(ctx.LEFT_SQUARE())
+
         expression = ""
         if ctx.expression():
+            self.validate_assignment_types(
+                variable_type + array_suffix,
+                ctx.expression(),
+                variable_name,
+                ctx.start.line,
+                ctx.start.column,
+            )
             expression = " = " + self.visit(ctx.expression())
+
         self.classes[self.current_class_name].append(
             f"{variable_type}{array_suffix} {variable_name}{expression};"
         )
@@ -352,6 +514,26 @@ class ChubbyCompiler(ChubbyVisitor):
     ) -> None:
         lvalue = self.visit(ctx.lvalue())
         operator = self.visit(ctx.assignment_operator())
+
+        if (
+            ctx.lvalue().IDENTIFIER()
+            and not ctx.lvalue().LEFT_SQUARE()
+            and not ctx.lvalue().DOT()
+        ):
+            variable_name = ctx.lvalue().IDENTIFIER().getText()
+            variable_type = self.get_variable_type_from_scope(variable_name)
+
+            if (
+                variable_type and operator == "="
+            ):  # Only check direct assignments for now
+                self.validate_assignment_types(
+                    variable_type,
+                    ctx.expression(),
+                    variable_name,
+                    ctx.start.line,
+                    ctx.start.column,
+                )
+
         expression = self.visit(ctx.expression())
         self.classes[self.current_class_name].append(
             f"{lvalue} {operator} {expression};"
@@ -628,9 +810,15 @@ class ChubbyCompiler(ChubbyVisitor):
     def visitParameter(self, ctx: ChubbyParser.ParameterContext) -> str:
         param_type = self.visit(ctx.type_specifier())
         param_name = ctx.IDENTIFIER().getText()
+        is_array = bool(ctx.LEFT_SQUARE())
+
         self.add_to_current_scope(
-            param_name, f"at line {ctx.start.line}, column {ctx.start.column}"
+            param_name,
+            f"at line {ctx.start.line}, column {ctx.start.column}",
+            param_type,
+            is_array,
         )
+
         array_suffix = ""
         if ctx.LEFT_SQUARE():
             array_suffix = "[]" * len(ctx.LEFT_SQUARE())
@@ -789,16 +977,34 @@ class ChubbyCompiler(ChubbyVisitor):
         if self.scope_stack:
             self.scope_stack.pop()
 
-    def add_to_current_scope(self, name: str, info: str):
+    def get_current_scope(self):
+        if not self.scope_stack:
+            raise ChubbyCompilerError("No current scope available")
+        return self.scope_stack[-1]
+
+    def get_variable_type_from_scope(self, variable_name: str) -> str:
+        for scope in reversed(self.scope_stack):
+            if scope.has_variable(variable_name):
+                var_info = scope.get_variable(variable_name)
+                return var_info.get("type")
+        return None
+
+    def add_to_current_scope(
+        self, name: str, info: str, var_type: str = None, is_array: bool = False
+    ):
         if not self.scope_stack:
             raise ChubbyCompilerError("No current scope available to add variable")
+
         for scope in reversed(self.scope_stack):
             if scope.has_variable(name):
                 existing_info = scope.variables[name]
                 raise ChubbyCompilerError(
                     f"Variable '{name}' already defined in an accessible scope. "
-                    f"Previously defined {existing_info}; current declaration {info}"
+                    f"Previously defined {existing_info.get('position', '')}; current declaration {info}"
                 )
+
+        variable_info = {"position": info, "type": var_type, "is_array": is_array}
+        self.get_current_scope().add_variable(name, variable_info)
 
     def delete_from_current_scope(self, name: str):
         if not self.scope_stack:
