@@ -60,6 +60,7 @@ class ChubbyCompiler(ChubbyVisitor):
         self.scope_stack = []
         self.loop_stack = []
         self.functions = {}
+        self.function_context_stack = []
 
     def get_literal_type(self, literal_ctx) -> str:
         literal_text = literal_ctx.getText()
@@ -272,6 +273,9 @@ class ChubbyCompiler(ChubbyVisitor):
         if ctx.visibility_modifier():
             visibility = self.visit(ctx.visibility_modifier())
         self.classes[class_name].append(f"{visibility} class {class_name} {{")
+
+        self._register_all_functions(ctx)
+
         for class_member in ctx.class_member():
             self.visit(class_member)
         self.classes[class_name].append("}")
@@ -288,6 +292,15 @@ class ChubbyCompiler(ChubbyVisitor):
             raise ChubbyCompilerError(
                 f"Constructor name '{constructor_name}' does not match class name '{self.current_class_name}'"
             )
+
+        self.function_context_stack.append(
+            {
+                "name": constructor_name,
+                "return_type": "void",
+                "position": f"at line {ctx.start.line}, column {ctx.start.column}",
+            }
+        )
+
         parameters = ""
         if ctx.parameter_list():
             parameters = self.visit(ctx.parameter_list())
@@ -298,6 +311,8 @@ class ChubbyCompiler(ChubbyVisitor):
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+
+        self.function_context_stack.pop()
         self.exit_scope()
 
     def visitFunction_definition(
@@ -311,33 +326,20 @@ class ChubbyCompiler(ChubbyVisitor):
         static = ""
         if ctx.STATIC():
             static = "static "
-        if function_name == "main" and static == "static ":
-            if self.has_main_method:
-                raise ChubbyCompilerError("Multiple main methods defined")
-            self.has_main_method = True
-
-        parameter_count = 0
-        if ctx.parameter_list():
-            parameter_count = len(ctx.parameter_list().parameter())
 
         function_key = f"{self.current_class_name}.{function_name}"
-        if function_key in self.functions:
-            existing_func = self.functions[function_key]
-            raise ChubbyCompilerError(
-                f"Function '{function_name}' already defined in class '{self.current_class_name}'. "
-                f"Previously defined {existing_func['position']}"
-            )
+        function_info = self.functions[function_key]
+        return_type = function_info["return_type"]
 
-        self.functions[function_key] = {
-            "name": function_name,
-            "class": self.current_class_name,
-            "parameter_count": parameter_count,
-            "position": f"at line {ctx.start.line}, column {ctx.start.column}",
-            "is_static": bool(ctx.STATIC()),
-        }
+        self.function_context_stack.append(
+            {
+                "name": function_name,
+                "return_type": return_type,
+                "position": f"at line {ctx.start.line}, column {ctx.start.column}",
+            }
+        )
 
         parameters = ""
-        return_type = self.visit(ctx.return_type())
         if ctx.parameter_list():
             parameters = self.visitParameter_list(ctx.parameter_list())
         self.classes[self.current_class_name].append(
@@ -347,6 +349,8 @@ class ChubbyCompiler(ChubbyVisitor):
             for statement in ctx.statement():
                 self.visit(statement)
         self.classes[self.current_class_name].append("}")
+
+        self.function_context_stack.pop()
         self.exit_scope()
 
     def visitVariable_definition(
@@ -457,7 +461,7 @@ class ChubbyCompiler(ChubbyVisitor):
         if len(ctx.expression()) > 2:
             expression_step = self.visit(ctx.expression(2))
         self.classes[self.current_class_name].append(
-            f"for (int {for_variable} = {expression_from}; {for_variable} < {expression_to}; {for_variable} += {expression_step}) {{"
+            f"for (int {for_variable} = {expression_from}; {for_variable} < {expression_to}; {for_variable} += {for_variable} += {expression_step}) {{"
         )
         if ctx.statement():
             for statement in ctx.statement():
@@ -576,6 +580,8 @@ class ChubbyCompiler(ChubbyVisitor):
             return ctx.IDENTIFIER().getText()
 
     def visitReturn_statement(self, ctx: ChubbyParser.Return_statementContext) -> None:
+        self.validate_return_type(ctx.expression(), ctx.start.line, ctx.start.column)
+
         expression = ""
         if ctx.expression():
             expression = self.visit(ctx.expression())
@@ -1078,6 +1084,26 @@ class ChubbyCompiler(ChubbyVisitor):
                 f"'{keyword}' statements can only be used inside 'for' or 'while' loops."
             )
 
+    def get_argument_count_from_context(self, argument_list_ctx):
+        """
+        Count the number of arguments in a function call from the argument_list context.
+
+        Args:
+            argument_list_ctx: The argument_list context from the parser, or None if no arguments
+
+        Returns:
+            int: The number of arguments in the function call
+        """
+        if argument_list_ctx is None:
+            return 0
+
+        # Count the number of expression nodes in the argument list
+        expressions = argument_list_ctx.expression()
+        if expressions is None:
+            return 0
+
+        return len(expressions)
+
     def validate_function_call(
         self, function_name: str, argument_count: int, line: int, column: int
     ):
@@ -1108,7 +1134,236 @@ class ChubbyCompiler(ChubbyVisitor):
                 f"Function defined {matching_function['position']}"
             )
 
-    def get_argument_count_from_context(self, argument_list_ctx):
-        if not argument_list_ctx:
-            return 0
-        return len(argument_list_ctx.expression())
+    def get_expression_type(self, expression_ctx):
+        if not expression_ctx:
+            return None
+
+        literal_ctx = self._extract_literal_from_expression(expression_ctx)
+        if literal_ctx:
+            return self.get_literal_type(literal_ctx)
+
+        if (
+            hasattr(expression_ctx, "logical_expression")
+            and expression_ctx.logical_expression()
+        ):
+            logical_expr = expression_ctx.logical_expression()
+            if logical_expr.logical_operator():
+                return "bool"
+
+            if (
+                hasattr(logical_expr, "equality_expression")
+                and logical_expr.equality_expression()
+                and len(logical_expr.equality_expression()) == 1
+            ):
+
+                eq_expr = logical_expr.equality_expression(0)
+                if eq_expr.equality_operator():
+                    return "bool"
+
+                if (
+                    hasattr(eq_expr, "relational_expression")
+                    and eq_expr.relational_expression()
+                    and len(eq_expr.relational_expression()) == 1
+                ):
+
+                    rel_expr = eq_expr.relational_expression(0)
+                    if rel_expr.relational_operator():
+                        return "bool"
+
+                    if (
+                        hasattr(rel_expr, "additive_expression")
+                        and rel_expr.additive_expression()
+                        and len(rel_expr.additive_expression()) >= 1
+                    ):
+
+                        if len(rel_expr.additive_expression()) > 1:
+                            return self._get_arithmetic_result_type(
+                                rel_expr.additive_expression()
+                            )
+
+                        add_expr = rel_expr.additive_expression(0)
+                        if (
+                            hasattr(add_expr, "multiplicative_expression")
+                            and add_expr.multiplicative_expression()
+                            and len(add_expr.multiplicative_expression()) >= 1
+                        ):
+
+                            if len(add_expr.multiplicative_expression()) > 1:
+                                return self._get_arithmetic_result_type(
+                                    add_expr.multiplicative_expression()
+                                )
+
+                            mult_expr = add_expr.multiplicative_expression(0)
+                            if (
+                                hasattr(mult_expr, "unary_expression")
+                                and mult_expr.unary_expression()
+                                and len(mult_expr.unary_expression()) >= 1
+                            ):
+
+                                unary_expr = mult_expr.unary_expression(0)
+                                if (
+                                    hasattr(unary_expr, "postfix_expression")
+                                    and unary_expr.postfix_expression()
+                                ):
+
+                                    postfix_expr = unary_expr.postfix_expression()
+                                    if (
+                                        hasattr(postfix_expr, "primary_expression")
+                                        and postfix_expr.primary_expression()
+                                    ):
+
+                                        primary_expr = postfix_expr.primary_expression()
+                                        if (
+                                            hasattr(primary_expr, "IDENTIFIER")
+                                            and primary_expr.IDENTIFIER()
+                                        ):
+                                            var_name = (
+                                                primary_expr.IDENTIFIER().getText()
+                                            )
+                                            return self.get_variable_type_from_scope(
+                                                var_name
+                                            )
+                                        elif (
+                                            hasattr(primary_expr, "input_statement")
+                                            and primary_expr.input_statement()
+                                        ):
+                                            scanner_type = (
+                                                primary_expr.input_statement().scanner_input_type()
+                                            )
+                                            return self._get_scanner_type(scanner_type)
+
+        return None
+
+    def _get_arithmetic_result_type(self, expressions):
+        has_double = False
+        has_long = False
+        has_string = False
+
+        for expr in expressions:
+            expr_type = self.get_expression_type(expr)
+            if expr_type == "double":
+                has_double = True
+            elif expr_type == "long":
+                has_long = True
+            elif expr_type == "string":
+                has_string = True
+
+        if has_string:
+            return "string"
+        elif has_double:
+            return "double"
+        elif has_long:
+            return "long"
+        else:
+            return "int"
+
+    def _get_scanner_type(self, scanner_type_ctx):
+        if scanner_type_ctx.INT():
+            return "int"
+        elif scanner_type_ctx.BOOL():
+            return "bool"
+        elif scanner_type_ctx.LONG():
+            return "long"
+        elif scanner_type_ctx.DOUBLE():
+            return "double"
+        elif scanner_type_ctx.STRING():
+            return "string"
+        return None
+
+    def is_compatible_return_type(
+        self, declared_type: str, expression_type: str
+    ) -> bool:
+        if not expression_type:
+            return declared_type == "void"
+
+        declared_type = self.normalize_type_name(declared_type)
+        expression_type = self.normalize_type_name(expression_type)
+
+        if declared_type == "void":
+            return False
+
+        if expression_type == "null":
+            return declared_type not in ["int", "long", "double", "char", "bool"]
+
+        if declared_type == expression_type:
+            return True
+
+        if declared_type == "long" and expression_type == "int":
+            return True
+        if declared_type == "double" and expression_type in ["int", "long"]:
+            return True
+
+        return False
+
+    def validate_return_type(self, expression_ctx, line: int, column: int):
+        if not self.function_context_stack:
+            raise ChubbyCompilerError(
+                f"Return statement at line {line}, column {column} is not inside a function"
+            )
+
+        current_function = self.function_context_stack[-1]
+        expected_return_type = current_function["return_type"]
+
+        if not expression_ctx and expected_return_type != "void":
+            raise ChubbyCompilerError(
+                f"Return statement at line {line}, column {column} missing expression. "
+                f"Function '{current_function['name']}' expects return type '{expected_return_type}'"
+            )
+
+        if expression_ctx and expected_return_type == "void":
+            raise ChubbyCompilerError(
+                f"Return statement at line {line}, column {column} should not have expression. "
+                f"Function '{current_function['name']}' is declared as void"
+            )
+
+        if expression_ctx:
+            expression_type = self.get_expression_type(expression_ctx)
+
+            if not self.is_compatible_return_type(
+                expected_return_type, expression_type
+            ):
+                raise ChubbyCompilerError(
+                    f"Return type mismatch at line {line}, column {column}: "
+                    f"Function '{current_function['name']}' expects return type '{expected_return_type}', "
+                    f"but got '{expression_type}'"
+                )
+
+    def _register_all_functions(
+        self, ctx: ChubbyParser.Class_definitionContext
+    ) -> None:
+        for class_member in ctx.class_member():
+            if class_member.function_definition():
+                self._register_function_signature(class_member.function_definition())
+
+    def _register_function_signature(
+        self, ctx: ChubbyParser.Function_definitionContext
+    ) -> None:
+        function_name = ctx.IDENTIFIER().getText()
+
+        if function_name == "main" and ctx.STATIC():
+            if self.has_main_method:
+                raise ChubbyCompilerError("Multiple main methods defined")
+            self.has_main_method = True
+
+        parameter_count = 0
+        if ctx.parameter_list():
+            parameter_count = len(ctx.parameter_list().parameter())
+
+        function_key = f"{self.current_class_name}.{function_name}"
+        if function_key in self.functions:
+            existing_func = self.functions[function_key]
+            raise ChubbyCompilerError(
+                f"Function '{function_name}' already defined in class '{self.current_class_name}'. "
+                f"Previously defined {existing_func['position']}"
+            )
+
+        return_type = self.visit(ctx.return_type())
+
+        self.functions[function_key] = {
+            "name": function_name,
+            "class": self.current_class_name,
+            "parameter_count": parameter_count,
+            "position": f"at line {ctx.start.line}, column {ctx.start.column}",
+            "is_static": bool(ctx.STATIC()),
+            "return_type": return_type,
+        }

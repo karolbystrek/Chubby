@@ -1,0 +1,9 @@
+class Test
+    function public static main(String[] args) : void
+        print(getValue());
+    endfunction
+
+    function static getValue(): int
+        return 10;
+    endfunction
+endclass
