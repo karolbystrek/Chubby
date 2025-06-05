@@ -1213,6 +1213,62 @@ class ChubbyCompiler(ChubbyVisitor):
                                     ):
 
                                         primary_expr = postfix_expr.primary_expression()
+
+                                        if (
+                                            hasattr(postfix_expr, "suffix")
+                                            and postfix_expr.suffix()
+                                        ):
+                                            for i, suffix in enumerate(
+                                                postfix_expr.suffix()
+                                            ):
+                                                if suffix.function_call_suffix():
+                                                    function_name = None
+
+                                                    if (
+                                                        primary_expr.IDENTIFIER()
+                                                        and i == 0
+                                                    ):
+                                                        function_name = (
+                                                            primary_expr.IDENTIFIER().getText()
+                                                        )
+                                                    elif (
+                                                        i > 0
+                                                        and postfix_expr.suffix(
+                                                            i - 1
+                                                        ).member_access_suffix()
+                                                    ):
+                                                        function_name = (
+                                                            postfix_expr.suffix(i - 1)
+                                                            .member_access_suffix()
+                                                            .IDENTIFIER()
+                                                            .getText()
+                                                        )
+
+                                                    if function_name:
+                                                        function_key = f"{self.current_class_name}.{function_name}"
+                                                        if (
+                                                            function_key
+                                                            in self.functions
+                                                        ):
+                                                            return self.functions[
+                                                                function_key
+                                                            ]["return_type"]
+                                                        else:
+                                                            for (
+                                                                key,
+                                                                func_info,
+                                                            ) in self.functions.items():
+                                                                if (
+                                                                    func_info["name"]
+                                                                    == function_name
+                                                                    and func_info[
+                                                                        "is_static"
+                                                                    ]
+                                                                ):
+                                                                    return func_info[
+                                                                        "return_type"
+                                                                    ]
+
                                         if (
                                             hasattr(primary_expr, "IDENTIFIER")
                                             and primary_expr.IDENTIFIER()

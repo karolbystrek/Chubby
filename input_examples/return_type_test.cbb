@@ -1,9 +1,14 @@
 class Test
     function public static main(String[] args) : void
-        print(getValue());
+        print(10. / 0);
+    endfunction
+
+
+    function static returnInt() : int
+        return 10;
     endfunction
 
     function static getValue(): int
-        return 10;
+        return returnInt();
     endfunction
 endclass
